@@ -1,51 +1,43 @@
-const http = require('http');
-
-const hostname = '127.0.0.1';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, Node.js!');
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-
 // Install axios first
 // npm install axios
-/* const express = require('express');
-const axios = require('axios');
+import express from 'express';
+import path from 'path';
+import fetch from 'node-fetch';
+import qs from 'qs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 const app = express();
 const port = 3000;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.get('/get-access-token', async (req, res) => {
-    const tokenUrl = 'https://www.onlinescoutmanager.co.uk/oauth/token';
-    const clientId = 'your-client-id';
-    const clientSecret = 'your-client-secret';
+    const data = qs.stringify({
+        grant_type: 'client_credentials',
+        client_id: 'wScRdGaCnobiXdkvwF63o0nzBX2FQiz3',
+        client_secret: 'eySNzAj6RjW85Us5wVbdv2XJ84mrHTEXLnpqG0Ygci6JFNB3A3mdKuKgK2nbJhMX',
+    });
 
-    try {
-        const response = await axios.post(tokenUrl, null, {
-            params: {
-                grant_type: 'client_credentials',
-                client_id: clientId,
-                client_secret: clientSecret
-            },
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
+    const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data,
+    });
 
-        // Send the access token back to the client
-        res.json({ access_token: response.data.access_token });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error obtaining access token');
+    if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
     }
+
+    const json = await response.json();
+    console.log('Access Token:', json.access_token);
+    res.send(json.access_token);
 });
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
- */
