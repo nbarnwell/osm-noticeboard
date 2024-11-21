@@ -1,0 +1,19 @@
+{
+  "name": "osm-noticeboard",
+  "version": "0.0.0",
+  "description": "Basic single-page kiosk noticeboard for OSM",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test tests/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbarnwell/osm-noticeboard.git"
+  },
+  "author": "Neil Barnwell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nbarnwell/osm-noticeboard/issues"
+  },
+  "homepage": "https://github.com/nbarnwell/osm-noticeboard#readme"
+}
