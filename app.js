@@ -1,9 +1,8 @@
-// Install axios first
-// npm install axios
 import express from 'express';
 import path from 'path';
 import fetch from 'node-fetch';
 import qs from 'qs';
+import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 const app = express();
@@ -13,8 +12,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
 
-app.get('/get-access-token', async (req, res) => {
+app.get('/api/section-config', async (req, res) => {
+    const url = 'https://www.onlinescoutmanager.co.uk/api.php?action=getSectionConfig';
+
+    const token = req.cookies.osmt;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Bearer ' + token
+        },
+    });
+    if (!response.ok) {
+        res.status(500).send(new Error(`Error: ${response.statusText}`));
+        return;
+    }
+
+    response.json().then(x => {
+        res.send(x);
+    });
+});
+
+app.get('/auth', async (req, res) => {
     const data = qs.stringify({
         grant_type: 'client_credentials',
         client_id: 'wScRdGaCnobiXdkvwF63o0nzBX2FQiz3',
@@ -30,12 +52,19 @@ app.get('/get-access-token', async (req, res) => {
     });
 
     if (!response.ok) {
-        res.status(500).send(`Error from OSM auth: ${response.statusText}`);
+        res.status(500).send(new Error(`Error: ${response.statusText}`));
         return;
     }
 
     const json = await response.json();
-    res.send(json.access_token);
+    const token = json.access_token;
+    res.cookie('osmt', token, {
+        httpOnly: true,  // Prevent access via JavaScript
+        secure: false,    // Ensures the cookie is sent over HTTPS
+        sameSite: 'Strict', // Prevent CSRF
+        maxAge: 3600000  // Cookie expires in 1 hour (optional)
+    });
+    res.sendStatus(204);
 });
 
 app.use((err, req, res, next) => {

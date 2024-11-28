@@ -3,32 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAuth Client Credentials</title>
-    <script>
-        async function getAccessToken() {
-            // Make the request to get the access token
-            const tokenUrl = 'http://localhost:3000/get-access-token'
-            try {
-                const response = await fetch(tokenUrl, { method: 'GET' });
-                const data = await response.text();
-
-                if (response.ok) {
-                    // Save the access token in localStorage
-                    localStorage.setItem('access_token', data);
-                    console.log(data)
-                    alert('Access token saved to localStorage!');
-                } else {
-                    alert(`Failed to get access token: ${response.statusText} (OSM response: ${data})`);
-                }
-            } catch (error) {
-                console.error('Error during token request:', error);
-                alert('Error during token request: ' + error);
-            }
-        }
-    </script>
+    <title>Scout Noticeboard</title>
+    <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
     <h1>Get Access Token</h1>
-    <button onclick="getAccessToken()">Get Access Token</button>
+    <button onclick="refreshAccessToken()">Refresh Access Token</button>
+    <button onclick="loadSectionConfig()">Get Section Config</button>
 </body>
 </html>
