@@ -10,6 +10,8 @@ const port = 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const osmClientId = process.env.OSM_client_id;
+const osmClientSecret = process.env.OSM_client_secret;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
@@ -39,8 +41,8 @@ app.get('/api/section-config', async (req, res) => {
 app.get('/auth', async (req, res) => {
     const data = qs.stringify({
         grant_type: 'client_credentials',
-        client_id: 'wScRdGaCnobiXdkvwF63o0nzBX2FQiz3',
-        client_secret: 'eySNzAj6RjW85Us5wVbdv2XJ84mrHTEXLnpqG0Ygci6JFNB3A3mdKuKgK2nbJhMX',
+        client_id: osmClientId,
+        client_secret: osmClientSecret,
     });
 
     const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {
