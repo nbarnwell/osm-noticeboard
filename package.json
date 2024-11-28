@@ -5,6 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
+    "start": "nodemon app.js",
     "test": "node --test tests/*.js"
   },
   "repository": {
@@ -22,5 +23,8 @@
     "express": "^4.21.1",
     "node-fetch": "^3.3.2",
     "qs": "^6.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
