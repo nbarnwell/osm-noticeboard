@@ -30,12 +30,20 @@ app.get('/get-access-token', async (req, res) => {
     });
 
     if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        res.status(500).send(`Error from OSM auth: ${response.statusText}`);
+        return;
     }
 
     const json = await response.json();
-    console.log('Access Token:', json.access_token);
     res.send(json.access_token);
+});
+
+app.use((err, req, res, next) => {
+    console.log("got error");
+    console.error(err.stack);
+
+    // replace this with whatever UI you want to show the user
+    res.status(500).send('Something broke!');
 });
 
 app.listen(port, () => {

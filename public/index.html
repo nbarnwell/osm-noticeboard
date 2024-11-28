@@ -10,15 +10,15 @@
             const tokenUrl = 'http://localhost:3000/get-access-token'
             try {
                 const response = await fetch(tokenUrl, { method: 'GET' });
+                const data = await response.text();
 
                 if (response.ok) {
-                    const data = await response.text();
                     // Save the access token in localStorage
                     localStorage.setItem('access_token', data);
                     console.log(data)
                     alert('Access token saved to localStorage!');
                 } else {
-                    alert('Failed to get access token: ' + response.statusText);
+                    alert(`Failed to get access token: ${response.statusText} (OSM response: ${data})`);
                 }
             } catch (error) {
                 console.error('Error during token request:', error);
