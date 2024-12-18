@@ -1,0 +1,9 @@
+Have a separate "re-init" process that runs occasionally and obtains the section days/times and stores that locally?
+ - Just get the latest programme entry for each section and assume the times are always the same.
+
+Get sections
+Get terms
+Find all terms that include today's date
+For each current term:
+    Get programme summary
+    

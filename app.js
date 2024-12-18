@@ -16,26 +16,73 @@ const osmClientSecret = process.env.OSM_client_secret;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 
-app.get('/api/section-config', async (req, res) => {
-    const url = 'https://www.onlinescoutmanager.co.uk/api.php?action=getSectionConfig';
-
-    const token = req.cookies.osmt;
-
+async function callOsm(token, url) {
     const response = await fetch(url, {
-        method: 'POST',
+        method: 'GET',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': 'Bearer ' + token
         },
     });
     if (!response.ok) {
-        res.status(500).send(new Error(`Error: ${response.statusText}`));
+        throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+async function testOsm(token, url) {
+    const response = await fetch(url, {
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Bearer ' + token
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.text();
+}
+
+app.use((err, req, res, next) => {
+    if (!!err) {
+        console.error("ARRGH!");
+        console.error(err.stack);
+        res.sendStatus(500);
         return;
     }
 
-    response.json().then(x => {
-        res.send(x);
-    });
+    next();
+});
+
+app.get('/api/test', async (req, res) => {
+    /*
+    const terms = await callOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/api.php?action=getTerms');
+    const now = new Date();
+    
+    const termsList = 
+        Object.keys(terms)
+              .map(x => terms[x])
+              .filter(x => {
+                    const startDate = new Date(section.startdate);
+                    const endDate = new Date(section.enddate);
+                    return startDate <= now && endDate >= now;
+              });
+*/
+    var json = await testOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/ext/programme/?action=getProgramme&sectionid=8757&termid=763086');
+    res.send(json);
+});
+
+app.get('/api/sections', async (req, res) => {
+    const json = await callOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/api.php?action=getSectionConfig')
+    res.send(json);
+});
+
+app.get('/api/terms', async (req, res) => {
+    const json = await callOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/api.php?action=getTerms');
+    res.send(json);
 });
 
 app.get('/auth', async (req, res) => {
@@ -43,6 +90,7 @@ app.get('/auth', async (req, res) => {
         grant_type: 'client_credentials',
         client_id: osmClientId,
         client_secret: osmClientSecret,
+        scope: 'section:programme:read'
     });
 
     const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {
@@ -54,7 +102,7 @@ app.get('/auth', async (req, res) => {
     });
 
     if (!response.ok) {
-        res.status(500).send(new Error(`Error: ${response.statusText}`));
+        res.status(500).send(new Error(`Error with OSM auth: ${response.statusText}`));
         return;
     }
 
@@ -67,14 +115,6 @@ app.get('/auth', async (req, res) => {
         maxAge: 3600000  // Cookie expires in 1 hour (optional)
     });
     res.sendStatus(204);
-});
-
-app.use((err, req, res, next) => {
-    console.log("got error");
-    console.error(err.stack);
-
-    // replace this with whatever UI you want to show the user
-    res.status(500).send('Something broke!');
 });
 
 app.listen(port, () => {
