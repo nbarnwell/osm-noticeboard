@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scout Noticeboard</title>
-    <script type="text/javascript" src="index.js"></script>
+    <style>
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+    </style>
+    <script type="text/javascript" src="dev.js"></script>
 </head>
 <body>
     <h1>Get Access Token</h1>
@@ -12,6 +23,7 @@
     <button onclick="refreshAccessToken()">Refresh Access Token</button>
     <button onclick="loadSectionConfig()">Get Section Config</button>
     <button onclick="loadTerms()">Load Terms</button>
-    <p id="response"></p>
+    <button onclick="loadEvenings()">Load Evenings</button>
+    <pre id="response"></pre>
 </body>
 </html>

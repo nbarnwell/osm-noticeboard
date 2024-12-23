@@ -6,8 +6,21 @@ async function test() {
     if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    const json = await response.text()
-    document.getElementById('response').innerText = json;
+    const json = await response.json()
+    const formattedJson = JSON.stringify(json, null, 4);
+    document.getElementById('response').innerText = formattedJson;
+}
+
+async function loadEvenings() {
+    const url = 'http://localhost:3000/api/evenings?count=2';
+
+    const response = await fetch(url, { method: 'GET'});
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const json = await response.json()
+    const formattedJson = JSON.stringify(json, null, 4);
+    document.getElementById('response').innerText = formattedJson;
 }
 
 async function loadTerms() {
@@ -22,7 +35,7 @@ async function loadTerms() {
 }
 
 async function loadSectionConfig() {
-    const url = 'http://localhost:3000/api/section-config';
+    const url = 'http://localhost:3000/api/sections';
 
     const response = await fetch(url, { method: 'GET'});
     if (!response.ok) {

@@ -5,6 +5,9 @@ import qs from 'qs';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+
+import Queries from './Queries.js';
+
 const app = express();
 const port = 3000;
 
@@ -15,6 +18,14 @@ const osmClientSecret = process.env.OSM_client_secret;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
+app.use((err, req, res, next) => {
+    console.error('An error occurred:', err.message); // Log the error
+    res.status(500).json({ error: 'Internal Server Error' }); // Respond with a 500 status
+});
+
+const asyncHandler = fn => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 async function callOsm(token, url) {
     const response = await fetch(url, {
@@ -46,17 +57,6 @@ async function testOsm(token, url) {
     return await response.text();
 }
 
-app.use((err, req, res, next) => {
-    if (!!err) {
-        console.error("ARRGH!");
-        console.error(err.stack);
-        res.sendStatus(500);
-        return;
-    }
-
-    next();
-});
-
 app.get('/api/test', async (req, res) => {
     /*
     const terms = await callOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/api.php?action=getTerms');
@@ -71,8 +71,39 @@ app.get('/api/test', async (req, res) => {
                     return startDate <= now && endDate >= now;
               });
 */
-    var json = await testOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/ext/programme/?action=getProgramme&sectionid=8757&termid=763086');
-    res.send(json);
+    /* https://www.onlinescoutmanager.co.uk/ext/generic/startup/?action=getData
+    */
+    var json = await testOsm(req.cookies.osmt, 'https://www.onlinescoutmanager.co.uk/ext/programme/?action=getProgramme&sectionid=8757&termid=794609');
+    res.json(json);
+});
+
+
+app.get('/api/evenings', asyncHandler(async (req, res) => {
+    const { count } = req.query;
+    const queries = new Queries(req.cookies.osmt);
+    const sections = await queries.getSections();
+    const terms = await queries.getTerms();
+    const evenings = (
+        await Promise.all(
+            terms.map(async x => {
+                const p = await queries.getProgramme(x.sectionId, x.id);
+                return p.items.map((evening) => ({
+                    id: evening.eveningid,
+                    sectionId: evening.sectionid,
+                    termId: x.id,
+                    title: evening.title,
+                    startTime: new Date(evening.starttime),
+                    endTime: new Date(evening.endtime),
+                }));
+            })
+        )
+    ).flat(); // Flatten the resulting array of arrays
+    res.json(evenings);
+}));
+
+app.get('/api/sections/:sectionId/terms/:termId/evening/:eveningId', async (req, res) => {
+    const filePath = path.join(__dirname, 'example-responses', 'exampleprogramme.json');
+    res.sendFile(filePath);
 });
 
 app.get('/api/sections', async (req, res) => {
