@@ -1,3 +1,11 @@
+function displayJson(obj) {
+    const formattedJson = JSON.stringify(obj, null, 4);
+    document.getElementById('response').textContent = formattedJson;
+}
+
+function displayText(text) {
+    document.getElementById('response').innerText = text;
+}
 
 async function test() {
     const url = 'http://localhost:3000/api/test';
@@ -7,8 +15,7 @@ async function test() {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const json = await response.json()
-    const formattedJson = JSON.stringify(json, null, 4);
-    document.getElementById('response').innerText = formattedJson;
+    displayJson(json);
 }
 
 async function loadEvenings() {
@@ -19,8 +26,7 @@ async function loadEvenings() {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const json = await response.json()
-    const formattedJson = JSON.stringify(json, null, 4);
-    document.getElementById('response').innerText = formattedJson;
+    displayJson(json);
 }
 
 async function loadTerms() {
@@ -30,8 +36,8 @@ async function loadTerms() {
     if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    const json = await response.text()
-    document.getElementById('response').innerText = json;
+    const json = await response.json();
+    displayJson(json);
 }
 
 async function loadSectionConfig() {
@@ -41,8 +47,8 @@ async function loadSectionConfig() {
     if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    const json = await response.text()
-    document.getElementById('response').innerText = json;
+    const json = await response.json()
+    displayJson(json);
 }
 
 async function refreshAccessToken() {
@@ -50,11 +56,9 @@ async function refreshAccessToken() {
     const tokenUrl = 'http://localhost:3000/auth'
     try {
         const response = await fetch(tokenUrl, { method: 'GET' });
-        const data = await response.text();
 
         if (response.ok) {
-            // Save the access token in localStorage
-            alert('Access token saved to localStorage!');
+            displayText("Authenticated successfully");
         } else {
             alert(`Failed to get access token: ${response.statusText} (OSM response: ${data})`);
         }

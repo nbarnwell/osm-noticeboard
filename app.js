@@ -28,6 +28,7 @@ const asyncHandler = fn => (req, res, next) => {
 };
 
 async function callOsm(token, url) {
+    console.log("Calling " + url);
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -54,7 +55,7 @@ async function testOsm(token, url) {
         throw new Error(`Error: ${response.statusText}`);
     }
 
-    return await response.text();
+    return await response.json();
 }
 
 app.get('/api/test', async (req, res) => {
@@ -137,7 +138,8 @@ app.get('/auth', async (req, res) => {
         return;
     }
 
-    const json = await response.json();
+    const text = await response.text();
+    const json = JSON.parse(text);
     const token = json.access_token;
     res.cookie('osmt', token, {
         httpOnly: true,  // Prevent access via JavaScript

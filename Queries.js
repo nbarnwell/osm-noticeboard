@@ -30,7 +30,6 @@ export default class Queries {
         const terms =
             sectionIds.map(x => res[x])
                 .flat()
-                .filter(x => x.past === false)
                 .map(x => {
                     return {
                         id: parseInt(x.termid),
@@ -51,6 +50,7 @@ export default class Queries {
 
     callOsm = async function callOsm(token, url) {
         const fullUrl = new URL(url, this.osmRoot);
+        console.log("Querying " + fullUrl);
         const response = await fetch(fullUrl.toString(), {
             method: 'GET',
             headers: {
