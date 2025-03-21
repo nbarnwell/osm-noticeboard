@@ -1,16 +1,15 @@
-import { URL } from 'url';
+import OsmClient from './OsmClient.js'
 
 export default class Queries {
-    constructor(osmToken) {
-        this.osmToken = osmToken;
-        this.osmRoot = 'https://www.onlinescoutmanager.co.uk'
+    constructor() {
+        this.osmClient = new OsmClient();
     }
-    
-    getSections = async function() {
-        const res = await this.callOsm(this.osmToken, 'api.php?action=getSectionConfig');
+
+    getSections = async function () {
+        const res = await this.osmClient.getSectionConfig();
         const sectionIds = Object.keys(res).map(x => parseInt(x));
 
-        const sections = 
+        const sections =
             sectionIds.map(x => {
                 const current = res[x];
                 return {
@@ -22,9 +21,9 @@ export default class Queries {
 
         return sections;
     };
-    
-    getTerms = async function() {
-        const res = await this.callOsm(this.osmToken, 'api.php?action=getTerms')
+
+    getTerms = async function () {
+        const res = await this.osmClient.getTerms();
         const sectionIds = Object.keys(res).map(x => parseInt(x));
 
         const terms =
@@ -39,29 +38,12 @@ export default class Queries {
                         endDate: new Date(x.enddate)
                     };
                 });
-        
+
         return terms;
     };
 
-    getProgramme = async function(sectionId, termId) {
+    getProgramme = async function (sectionId, termId) {
         const res = await this.callOsm(this.osmToken, `ext/programme/?action=getProgramme&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
         return res;
     };
-
-    callOsm = async function callOsm(token, url) {
-        const fullUrl = new URL(url, this.osmRoot);
-        console.log("Querying " + fullUrl);
-        const response = await fetch(fullUrl.toString(), {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Bearer ' + token
-            },
-        });
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
-
-        return await response.json();
-    }
 }

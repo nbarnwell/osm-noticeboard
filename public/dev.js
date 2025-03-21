@@ -3,19 +3,20 @@ function displayJson(obj) {
     document.getElementById('response').textContent = formattedJson;
 }
 
-function displayText(text) {
-    document.getElementById('response').innerText = text;
-}
-
-async function test() {
-    const url = 'http://localhost:3000/api/test';
-
-    const response = await fetch(url, { method: 'GET'});
+async function callOsm(token, url) {
+    console.log("Calling " + url);
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Bearer ' + token
+        },
+    });
     if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`Error: ${response.statusText}`);
     }
-    const json = await response.json()
-    displayJson(json);
+
+    return await response.json();
 }
 
 async function loadEvenings() {
