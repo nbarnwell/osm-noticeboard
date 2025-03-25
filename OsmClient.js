@@ -44,8 +44,8 @@ class OsmClient {
                 const data = await fs.promises.readFile(cacheFile, 'utf-8');
                 return JSON.parse(data);
             } else {
-                console.log('Cache expired, deleting files');
-                await this.#cleanupOldCache();
+                //console.log('Cache expired, deleting files');
+                //await this.#cleanupOldCache();
             }
         } catch (error) {
             if (error.code !== 'ENOENT') console.error('Error checking cache:', error);

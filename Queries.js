@@ -14,6 +14,7 @@ export default class Queries {
                 const current = res[x];
                 return {
                     id: x,
+                    groupName: current.portal.charityName,
                     sectionType: current.sectionType,
                     meetingDay: current.meeting_day
                 }
@@ -43,7 +44,6 @@ export default class Queries {
     };
 
     getProgramme = async function (sectionId, termId) {
-        const res = await this.callOsm(this.osmToken, `ext/programme/?action=getProgramme&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
-        return res;
+        return await this.osmClient.getProgramme(sectionId, termId);
     };
 }

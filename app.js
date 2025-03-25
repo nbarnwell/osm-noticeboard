@@ -26,24 +26,42 @@ const asyncHandler = fn => (req, res, next) => {
 
 app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
-    const sections = await queries.getSections();
     const terms = await queries.getTerms();
+    const today = Date.now();
     const evenings = (
         await Promise.all(
-            terms.map(async x => {
-                const p = await queries.getProgramme(x.sectionId, x.id);
-                return p.items.map((evening) => ({
-                    id: evening.eveningid,
-                    sectionId: evening.sectionid,
-                    termId: x.id,
-                    title: evening.title,
-                    startTime: new Date(evening.starttime),
-                    endTime: new Date(evening.endtime),
-                }));
+            terms.filter(term => term.startDate <= today && term.endDate >= today)
+                 .map(async term => {
+                    const p = await queries.getProgramme(term.sectionId, term.id);
+                    if (p !== null && p.hasOwnProperty('items') && Array.isArray(p.items)) {
+                        return p.items.map((evening) => ({
+                            id: evening.eveningid,
+                            sectionId: evening.sectionid,
+                            termId: term.id,
+                            title: evening.title,
+                            startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
+                            endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime)
+                            // TODO Add more properties here to show the section and term details, and badges
+                        }));
+                    };
             })
         )
     ).flat(); // Flatten the resulting array of arrays
     res.json(evenings);
+}));
+
+app.get('/api/sections/:id', asyncHandler(async (req, res, next) => {
+    const queries = new Queries();
+    const sections = await queries.getSections();
+    const sectionMap = new Map(sections.map(x => [x.id, x]));
+    const id = parseInt(req.params.id);
+    const section = sectionMap.get(id);
+
+    if (section) {
+        return res.json(section);
+    } else {
+        return next({ status: 404, message: `Section ${id} not found` }); // Pass the error to the next middleware
+    }
 }));
 
 app.delete('api/cache', asyncHandler(async (req, res) => {

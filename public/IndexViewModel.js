@@ -1,11 +1,10 @@
 import EventListViewModel from './EventListViewModel.js';
-import EventViewModel from './EventViewModel.js'
-import SessionViewModel from './SessionViewModel.js'
 
 export default class IndexViewModel {
-    constructor() {
-        this.currentSession = ko.observable(new SessionViewModel("Current session"));
-        this.nextSession = ko.observable(new SessionViewModel("Next session"));
+    constructor(section, currentSession, nextSession) {
+        this.currentSection = ko.observable(section);
+        this.currentSession = ko.observable(currentSession);
+        this.nextSession = ko.observable(nextSession);
         this.upcomingEvents = new EventListViewModel();
     }
 }
