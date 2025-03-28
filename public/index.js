@@ -52,8 +52,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   
   const section = await get(`api/sections/${currentSession.sectionId}`);
   const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType));
-  const currentSessionViewModel = new SessionViewModel(currentSession.title, new Date(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`);
-  const nextSessionViewModel = new SessionViewModel(nextSession.title, formatDate(currentSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`);
+  const currentSessionViewModel = new SessionViewModel(currentSession.title, new Date(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
+  const nextSessionViewModel = new SessionViewModel(nextSession.title, formatDate(currentSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
 
   const events = await get(`api/sections/${section.id}/terms/${currentSession.termId}/events`);
   const eventlist = new EventListViewModel();

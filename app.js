@@ -47,7 +47,8 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
                             termId: term.id,
                             title: evening.title,
                             startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
-                            endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime)
+                            endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime),
+                            notesForParents: evening.notesforparents
                             // TODO Add more properties here to show the section and term details, and badges
                         }));
                     };
