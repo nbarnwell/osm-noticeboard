@@ -1,3 +1,5 @@
+import EventListViewModel from './EventListViewModel.js';
+import EventViewModel from './EventViewModel.js';
 import IndexViewModel from './IndexViewModel.js'
 import SectionViewModel from './SectionViewModel.js';
 import SessionViewModel from './SessionViewModel.js';
@@ -37,7 +39,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   evenings.sort((a, b) => (new Date(b.startDateTime) - new Date(a.startDateTime) - (b.id - a.id)));
   
   // Find the relevant sessions
-  const now = new Date('2025-03-25T19:15:00'); //Date.now();
+  const now = new Date('2025-03-17T19:15:00'); //Date.now();
+  //const now = new Date('2025-03-25T19:15:00'); //Date.now();
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
   if (currentSession === null) {
@@ -52,7 +55,14 @@ document.addEventListener("DOMContentLoaded", async function () {
   const currentSessionViewModel = new SessionViewModel(currentSession.title, new Date(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`);
   const nextSessionViewModel = new SessionViewModel(nextSession.title, formatDate(currentSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`);
 
-  const indexViewModel = new IndexViewModel(sectionViewModel, currentSessionViewModel, nextSessionViewModel);
+  const events = await get(`api/sections/${section.id}/terms/${currentSession.termId}/events`);
+  const eventlist = new EventListViewModel();
+  
+  for (const evt of events) {
+    eventlist.addEvent(evt.name, evt.date);
+  }
+
+  const indexViewModel = new IndexViewModel(sectionViewModel, currentSessionViewModel, nextSessionViewModel, eventlist);
 
   ko.applyBindings(indexViewModel);
 });

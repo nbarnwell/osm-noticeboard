@@ -24,6 +24,13 @@ const asyncHandler = fn => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+/// Used when a date is in DD/MM/YYYY format, which JavaScript's Date doesn't support
+const parseDate = (dateString) => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    const date = new Date(year, month - 1, day); // Month is 0-based in JS
+    return date;
+};
+
 app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTerms();
@@ -62,6 +69,28 @@ app.get('/api/sections/:id', asyncHandler(async (req, res, next) => {
     } else {
         return next({ status: 404, message: `Section ${id} not found` }); // Pass the error to the next middleware
     }
+}));
+
+app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req, res, next) => {
+    const sectionId = parseInt(req.params.sectionId);
+    const termId = parseInt(req.params.termId);
+
+    const queries = new Queries();
+
+    // Because OSM isn't limiting the results to the termId supplied, I need to do that here
+    const term = (await queries.getTerms(sectionId)).filter(x => x.id === termId)[0];
+
+    const events = (await queries.getEvents(sectionId, termId)).items;
+    events.sort((a, b) => new Date(a.date) < new Date(b.date));
+    const from = new Date(term.startDate);
+    const to = new Date();
+    to.setDate(from.getDate() + 60);
+    const upcomingEvents = events.filter(x => {
+        const eventDate = parseDate(x.date);
+        return eventDate >= from && eventDate <= to;
+    }).slice(0, 5);
+
+    return res.json(upcomingEvents);
 }));
 
 app.delete('api/cache', asyncHandler(async (req, res) => {

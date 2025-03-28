@@ -32,6 +32,10 @@ class OsmClient {
         return await this.#fetchWithCache(`ext/programme/?action=getProgramme&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
     }
 
+    async getEvents(sectionId, termId) {
+        return await this.#fetchWithCache(`ext/events/summary/?action=get&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
+    }
+
     async #fetchWithCache(url) {
         const cacheFile = path.join(this.CACHE_DIR, encodeURIComponent(url) + '.json');
 
@@ -122,7 +126,7 @@ class OsmClient {
             grant_type: 'client_credentials',
             client_id: osmClientId,
             client_secret: osmClientSecret,
-            scope: 'section:programme:read'
+            scope: 'section:programme:read section:event:read'
         });
 
         const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {

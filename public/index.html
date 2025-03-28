@@ -57,12 +57,15 @@
             </div>
 
             <!-- Upcoming Events Section -->
-            <div class="col-12 col-lg-4">
+            <div class="col-12 col-lg-4" data-bind="with: upcomingEvents">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">Upcoming events:</h5>
-                        <ul class="list-group list-group-flush" data-bind="foreach: upcomingEvents.eventList">
-                            <li class="list-group-item" data-bind="text: title"></li>
+                        <h5 class="card-title fw-bold text-primary">Upcoming Events</h5>
+                        <ul class="list-group list-group-flush" data-bind="foreach: eventList">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="fw-bold" data-bind="text: title">Event Title</span>
+                                <span class="text-muted small" data-bind="text: date">DD/MM/YYYY</span>
+                            </li>
                         </ul>
                     </div>
                 </div>

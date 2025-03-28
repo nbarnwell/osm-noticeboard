@@ -46,4 +46,8 @@ export default class Queries {
     getProgramme = async function (sectionId, termId) {
         return await this.osmClient.getProgramme(sectionId, termId);
     };
+
+    getEvents = async function (sectionId, termId) {
+        return await this.osmClient.getEvents(sectionId, termId);
+    };
 }
