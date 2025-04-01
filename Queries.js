@@ -44,7 +44,26 @@ export default class Queries {
     };
 
     getProgramme = async function (sectionId, termId) {
-        return await this.osmClient.getProgramme(sectionId, termId);
+        const programme = await this.osmClient.getProgramme(sectionId, termId);
+        const programmeSummaries = await this.osmClient.getProgrammeSummary(sectionId, termId);
+        const programmeSummaryMap = new Map(programmeSummaries.items.map(x => [x.eveningid, x]));
+
+        return ({
+            items: programme.items.map(x => {
+                const summary = programmeSummaryMap.get(x.eveningid);
+                return {
+                    id: x.eveningid,
+                    sectionid: sectionId,
+                    termid: termId,
+                    title: x.title,
+                    meetingdate: x.meetingdate,
+                    starttime: x.starttime,
+                    endtime: x.endtime,
+                    notesforparents: x.notesforparents,
+                    badgeNames: summary.badges.map(x => x.name )
+                };
+            })
+        });
     };
 
     getEvents = async function (sectionId, termId) {

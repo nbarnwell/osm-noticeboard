@@ -6,41 +6,44 @@ import SessionViewModel from './SessionViewModel.js';
 import toTitleCase from './Text.js';
 
 async function get(path) {
-    const url = new URL(path, 'http://localhost:3000/');
+  const url = new URL(path, 'http://localhost:3000/');
 
-    const response = await fetch(url, { method: 'GET'});
-    if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const json = await response.json()
-    return json;
+  const response = await fetch(url, { method: 'GET' });
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const json = await response.json()
+  return json;
 }
 
 function formatTime(dateString) {
   const date = new Date(dateString);
   return date.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,  // Use 24-hour format
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,  // Use 24-hour format
   });
 }
 
 function formatDate(dateString) {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
   });
+}
+
+function logoUrl(sectionType) {
+  return sectionType.toLowerCase() + '.png';
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
   const evenings = await get('api/evenings');
   evenings.sort((a, b) => (new Date(b.startDateTime) - new Date(a.startDateTime) - (b.id - a.id)));
-  
+
   // Find the relevant sessions
-  const now = new Date('2025-03-17T19:15:00'); //Date.now();
-  //const now = new Date('2025-03-25T19:15:00'); //Date.now();
+  const now = new Date('2025-04-03T19:15:00'); //Date.now();
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
   if (currentSession === null) {
@@ -48,16 +51,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
-  const nextSession = evenings.filter(x => x.sectionId === currentSession.sectionId && new Date(x.startDateTime) < new Date(currentSession.startDateTime))[0];
-  
+  const nextSession = evenings.filter(x => x.sectionId === currentSession.sectionId && new Date(x.startDateTime) > new Date(currentSession.startDateTime))[0];
+
   const section = await get(`api/sections/${currentSession.sectionId}`);
-  const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType));
-  const currentSessionViewModel = new SessionViewModel(currentSession.title, new Date(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
-  const nextSessionViewModel = new SessionViewModel(nextSession.title, formatDate(currentSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
+  const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
+  const currentSessionViewModel = new SessionViewModel(currentSession.id, currentSession.title, formatDate(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
+  for (const badgeName of currentSession.badgeNames) {
+    currentSessionViewModel.addBadge(badgeName);
+  }
+
+  const nextSessionViewModel = new SessionViewModel(nextSession.id, nextSession.title, formatDate(nextSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
+  for (const badgeName of nextSession.badgeNames) {
+    nextSessionViewModel.addBadge(badgeName);
+  }
 
   const events = await get(`api/sections/${section.id}/terms/${currentSession.termId}/events`);
   const eventlist = new EventListViewModel();
-  
+
   for (const evt of events) {
     eventlist.addEvent(evt.name, evt.date);
   }

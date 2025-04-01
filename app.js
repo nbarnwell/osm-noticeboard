@@ -42,14 +42,14 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
                     const p = await queries.getProgramme(term.sectionId, term.id);
                     if (p !== null && p.hasOwnProperty('items') && Array.isArray(p.items)) {
                         return p.items.map((evening) => ({
-                            id: evening.eveningid,
+                            id: evening.id,
                             sectionId: evening.sectionid,
                             termId: term.id,
                             title: evening.title,
                             startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
                             endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime),
-                            notesForParents: evening.notesforparents
-                            // TODO Add more properties here to show the section and term details, and badges
+                            notesForParents: evening.notesforparents,
+                            badgeNames: evening.badgeNames
                         }));
                     };
             })

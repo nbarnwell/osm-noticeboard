@@ -32,6 +32,10 @@ class OsmClient {
         return await this.#fetchWithCache(`ext/programme/?action=getProgramme&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
     }
 
+    async getProgrammeSummary(sectionId, termId) {
+        return await this.#fetchWithCache(`ext/programme/?action=getProgrammeSummary&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}&verbose=1`);
+    }
+
     async getEvents(sectionId, termId) {
         return await this.#fetchWithCache(`ext/events/summary/?action=get&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
     }
