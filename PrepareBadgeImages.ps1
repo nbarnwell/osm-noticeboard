@@ -1,13 +1,5 @@
 
-Set-Location (Join-Path $PSScriptRoot 'images' 'badges')
-
-Get-ChildItem -Recurse |
-    Foreach-Object {
-        rename-item -Path $_ -NewName ( $_.name -replace '^(Activity|Challenge)-Badges-Cu-','' )
-        rename-item -Path $_ -NewName ( $_.name -replace '-RGB','' )
-        rename-item -Path $_ -NewName ( $_.name -replace '-',' ' )
-        rename-item -Path $_ -NewName ( $_.name -replace 'Backwooks','Backwoods' )
-    }
+Set-Location (Join-Path (Split-Path $PSCommandPath -Parent) 'public' 'images' 'badges')
 
 Get-ChildItem -Directory |
     Foreach-Object {
@@ -15,6 +7,28 @@ Get-ChildItem -Directory |
         Remove-Item (Join-Path $_ "*.eps") 
         Remove-Item (Join-Path $_ "*.log") 
     }
+
+Get-ChildItem -Recurse |
+    Foreach-Object {
+        rename-item -Path $_ -NewName ( $_.name -replace '^(Activity-Badges|Challenge-Awards)-(Be|Cu|Sc|Ex)-','' )
+    }
+Get-ChildItem -Recurse |
+    Foreach-Object {
+        rename-item -Path $_ -NewName ( $_.name -replace '^(Staged-Activities)-','' )
+    }
+Get-ChildItem -Recurse |
+    Foreach-Object {
+        rename-item -Path $_ -NewName ( $_.name -replace '-RGB','' )
+    }
+Get-ChildItem -Recurse |
+    Foreach-Object {
+        rename-item -Path $_ -NewName ( $_.name -replace '-',' ' )
+    }
+Get-ChildItem -Recurse |
+    Foreach-Object {
+        rename-item -Path $_ -NewName ( $_.name -replace 'Backwooks','Backwoods' )
+    }
+
 
 <#
 
