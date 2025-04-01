@@ -103,10 +103,16 @@ class OsmClient {
             },
         });
 
+        if (response.status === 403) {
+            console.log("Token expired, refreshing token...");
+            this.#clearTokenData();
+            return this.#callOsm(url);
+        }
+
         await this.#saveApiState(response);
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
     
         return response;
@@ -165,6 +171,14 @@ class OsmClient {
         const content = await fs.promises.readFile(tokenFile, 'utf-8');
         const tokenData = JSON.parse(content);
         return tokenData;
+    }
+
+    async #clearTokenData() {
+        const tokenFile = path.join(this.CACHE_DIR, 'token.json');
+        if (!fs.existsSync(tokenFile)) {
+            return;
+        }
+        fs.unlinkSync(tokenFile);
     }
 
     async #saveApiState(response) {
