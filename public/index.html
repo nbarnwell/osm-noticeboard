@@ -66,6 +66,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Now:</h5>
                         <h3 data-bind="text: title" class="card-subtitle mb-2 text-primary"></h3>
+                        <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
                         <p class="card-text">
                             <span class="fw-bold">Time:</span>
                             <span data-bind="text: startTime"></span> until
@@ -76,7 +77,7 @@
                     </div>
                     <div class="card-footer text-muted">
                         <div data-bind="foreach: badges">
-                            <span class="badge rounded-pill bg-primary me-1" data-bind="text: $data"></span>
+                            <img data-bind="attr: { src: badgeImage, alt: badgeName }" style="margin-left: 5px;">
                         </div>
                     </div>
                 </div>
@@ -88,6 +89,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Next time:</h5>
                         <h3 data-bind="text: title" class="card-subtitle mb-2 text-success"></h3>
+                        <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
                         <p class="card-text">
                             <span class="fw-bold">Time:</span>
                             <span data-bind="text: startTime"></span> until
@@ -98,7 +100,7 @@
                     </div>
                     <div class="card-footer text-muted">
                         <div data-bind="foreach: badges">
-                            <span class="badge rounded-pill bg-primary me-1" data-bind="text: $data"></span>
+                            <img data-bind="attr: { src: badgeImage, alt: badgeName }" style="margin-left: 5px;">
                         </div>
                     </div>
                 </div>

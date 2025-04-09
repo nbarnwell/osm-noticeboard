@@ -1,5 +1,6 @@
 import EventListViewModel from './EventListViewModel.js';
 import EventViewModel from './EventViewModel.js';
+import BadgeViewModel from './BadgeViewModel.js';
 import IndexViewModel from './IndexViewModel.js'
 import SectionViewModel from './SectionViewModel.js';
 import SessionViewModel from './SessionViewModel.js';
@@ -35,7 +36,7 @@ function formatDate(dateString) {
 }
 
 function logoUrl(sectionType) {
-  return sectionType.toLowerCase() + '.png';
+  return `/images/sections/${sectionType}.png`;
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -56,13 +57,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   const section = await get(`api/sections/${currentSession.sectionId}`);
   const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
   const currentSessionViewModel = new SessionViewModel(currentSession.id, currentSession.title, formatDate(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
-  for (const badgeName of currentSession.badgeNames) {
-    currentSessionViewModel.addBadge(badgeName);
+  for (const badge of currentSession.badgeLinks) {
+    currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
   }
 
   const nextSessionViewModel = new SessionViewModel(nextSession.id, nextSession.title, formatDate(nextSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
-  for (const badgeName of nextSession.badgeNames) {
-    nextSessionViewModel.addBadge(badgeName);
+  for (const badge of nextSession.badgeLinks) {
+    nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
   }
 
   const events = await get(`api/sections/${section.id}/terms/${currentSession.termId}/events`);

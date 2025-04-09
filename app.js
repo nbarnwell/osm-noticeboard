@@ -31,30 +31,134 @@ const parseDate = (dateString) => {
     return date;
 };
 
+app.get('/public/images/badges/:sectionName/:badgeType/:badgeName.png', (req, res) => {
+    const { sectionName, badgeType, badgeName } = req.params;
+    const filePath = badgeUrl(sectionName, badgeType, badgeName);
+    
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error('Error sending file:', err);
+            res.status(err.status).end();
+        }
+    });
+});
+
+const badgeUrl = (sectionName, badgeType, badgeName) => {
+    return path.join(__dirname, `public`, 'images', 'badges', badgeSubFolder(sectionName, badgeType), `${badgeFileName(sectionName, badgeType, badgeName)}-RGB.png`);
+};
+
+const badgeFileName = (sectionName, badgeType, badgeName) => {
+    if (badgeName === 'Hikes') {
+        badgeName = 'Hikes Away';
+    }
+
+    badgeName = badgeName.replace(/ /g, '-').replace(/'/g, '').replace(/&/g, 'and').replace(/\./g, '');
+
+    if (badgeType === 'Staged') {
+        badgeName += '-Stage-1';
+    }
+
+    return `${badgeNamePrefix(badgeType)}-${badgeSectionAbbreviation(badgeType, sectionName)}${badgeName}`;
+};
+
+const badgeSectionAbbreviation = (badgeType, sectionName) => {
+    if (badgeType === 'Staged') {
+        return '';
+    }
+
+    return sectionName.substring(0, 1).toUpperCase() + sectionName.substring(1, 2).toLowerCase() + '-';
+};
+
+const badgeSubFolder = (sectionName, badgeType) => {
+    // Staged activity badges are for all sections
+    if (badgeType === 'Staged') {
+        return 'staged-activity-badges-zip-download';
+    }
+
+    // Activity badges are for each section
+    if (badgeType === 'Activity') {
+        switch (sectionName) {
+            case 'Squirrels':
+                return 'activity-badges-beavers-zip-download/png';
+            case 'Beavers':
+                return 'Activity Badges-Beavers';
+            case 'Cubs':
+                return 'Activity Badges-Cubs';
+            case 'Scouts':
+                return 'Scouts - New-Y';
+            case 'Explorers':
+                return null;
+            case 'Network':
+                return 'badges';
+            default:
+                return `UnknownBadgeSubFolder-${sectionName}-${badgeType}`;
+        }
+    }
+
+    // Challenge badges are for each section
+    if (badgeType === 'Challenge') {
+        switch (sectionName) {
+            case 'Beavers':
+                return 'Challenge Award Badges-Beavers';
+            case 'Cubs':
+                return 'Challenge Award Badges-Cubs';
+            case 'Scouts':
+                return null;
+            default:
+                return `UnknownBadgeSubFolder-${sectionName}-${badgeType}`;
+        }
+    }
+
+    return `UnkownBadgeSubFolder-${sectionName}-${badgeType}`;
+};
+
+const badgeNamePrefix = (badgeType) => {
+    switch (badgeType) {
+        case 'Activity':
+            return 'Activity-Badges';
+        case 'Challenge':
+            return 'Challenge-Awards';
+        case 'Staged':
+            return 'Staged-Activities';
+        default:
+            return `UnknownBadgePrefix-${badgeType}`;
+    }
+};
+
 app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTerms();
-    const today = Date.now();
+    const now = new Date('2025-04-03T19:15:00'); // Simulated current date
+    
     const evenings = (
         await Promise.all(
-            terms.filter(term => term.startDate <= today && term.endDate >= today)
-                 .map(async term => {
-                    const p = await queries.getProgramme(term.sectionId, term.id);
-                    if (p !== null && p.hasOwnProperty('items') && Array.isArray(p.items)) {
-                        return p.items.map((evening) => ({
-                            id: evening.id,
-                            sectionId: evening.sectionid,
-                            termId: term.id,
-                            title: evening.title,
-                            startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
-                            endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime),
-                            notesForParents: evening.notesforparents,
-                            badgeNames: evening.badgeNames
-                        }));
-                    };
-            })
+            terms.filter(term => term.startDate <= now && term.endDate >= now)
+                .map(async term => {
+                    const programme = await queries.getProgramme(term.sectionId, term.id);
+                    
+                    if (programme && Array.isArray(programme.items)) {
+                        return Promise.all(
+                            programme.items.map(async (evening) => {
+                                const programmeDetail = await queries.getProgrammeDetail(term.sectionId, term.id, evening.eveningid);
+                                return {
+                                    id: evening.eveningid,
+                                    sectionId: evening.sectionid,
+                                    termId: term.id,
+                                    title: evening.title,
+                                    startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
+                                    endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime),
+                                    notesForParents: evening.notesforparents,
+                                    parentsRequired: parseInt(evening.parentsrequired),
+                                    badgeLinks: programmeDetail.items[0].badgelinks
+                                };
+                            })
+                        );
+                    }
+                    return []; // Ensure we return an array even if there are no items
+                })
         )
     ).flat(); // Flatten the resulting array of arrays
+    
     res.json(evenings);
 }));
 

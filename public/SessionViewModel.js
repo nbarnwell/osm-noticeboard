@@ -9,15 +9,9 @@ export default class SessionViewModel {
         this.badges = ko.observableArray([]);
     }
 
-    addBadge(sectionName, badgeName) {
-        this.badges.push({
-            sectionName: ko.observable(sectionName),
-            badgeName: ko.observable(badgeName),
-            logoUrl: ko.observable(badgeUrl(sectionName, badgeName)),
-        });
-    }
-
-    badgeUrl(sectionName, badgeName) {
-        return `/images/badges/${sectionName.toLowerCase()}/${badgeName.toLowerCase()}.png`;
+    addBadge(badgeViewModel) {
+        if (!this.badges().map(b => b.badgeName()).includes(badgeViewModel.badgeName())) {
+            this.badges.push(badgeViewModel);
+        }
     }
 }

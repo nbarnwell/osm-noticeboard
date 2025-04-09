@@ -28,6 +28,10 @@ class OsmClient {
         return await this.#fetchWithCache('api.php?action=getTerms');
     }
 
+    async getProgrammeDetail(sectionId, termId, eveningId) {
+        return await this.#fetchWithCache(`ext/programme/?action=getProgramme&eveningid=${parseInt(eveningId)}&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
+    }
+
     async getProgramme(sectionId, termId) {
         return await this.#fetchWithCache(`ext/programme/?action=getProgramme&sectionid=${parseInt(sectionId)}&termid=${parseInt(termId)}`);
     }
@@ -197,7 +201,7 @@ class OsmClient {
             RateLimitLimit: parseInt(response.headers.get('X-RateLimit-Limit')),
             RateLimitRemaining: parseInt(response.headers.get('X-RateLimit-Remaining')),
             RateLimitReset: parseInt(response.headers.get('X-RateLimit-Reset')),
-            Blocked: response.headers.get('X-Blocked')
+            Blocked: new Boolean(response.headers.get('X-Blocked'))
         };
 
         const apiStateFile = path.join(this.CACHE_DIR, 'apiState.json');
