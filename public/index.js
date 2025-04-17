@@ -44,36 +44,50 @@ document.addEventListener("DOMContentLoaded", async function () {
   evenings.sort((a, b) => (new Date(b.startDateTime) - new Date(a.startDateTime) - (b.id - a.id)));
 
   // Find the relevant sessions
-  const now = new Date('2025-04-03T19:15:00'); //Date.now();
+  //const now = new Date('2025-04-03T19:15:00'); //Date.now();
+  const now = Date.now();
+  const indexViewModel = new IndexViewModel();
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
-  if (currentSession === null) {
+  if (currentSession == null) {
     console.log(`No current session found matching ${now}`)
-    return;
   }
 
-  const nextSession = evenings.filter(x => x.sectionId === currentSession.sectionId && new Date(x.startDateTime) > new Date(currentSession.startDateTime))[0];
+  const nextSession = 
+    currentSession != null 
+    ? evenings.filter(x => x.sectionId === currentSession.sectionId && new Date(x.startDateTime) > new Date(currentSession.startDateTime))[0]
+    : evenings.filter(x => new Date(x.startDateTime) > new Date(now))[0];
 
-  const section = await get(`api/sections/${currentSession.sectionId}`);
+  const section = await get(`api/sections/${currentSession != null ? currentSession.sectionId : nextSession.sectionId}`);
   const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
-  const currentSessionViewModel = new SessionViewModel(currentSession.id, currentSession.title, formatDate(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
-  for (const badge of currentSession.badgeLinks) {
-    currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+  indexViewModel.setCurrentSection(sectionViewModel);
+
+  if (currentSession != null) {
+    const currentSessionViewModel = new SessionViewModel(currentSession.id, currentSession.title, formatDate(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
+    for (const badge of currentSession.badgeLinks) {
+      currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+    }
+    indexViewModel.setCurrentSession(currentSessionViewModel);
   }
 
-  const nextSessionViewModel = new SessionViewModel(nextSession.id, nextSession.title, formatDate(nextSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
-  for (const badge of nextSession.badgeLinks) {
-    nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+  if (nextSession != null) {
+    const nextSessionViewModel = new SessionViewModel(nextSession.id, nextSession.title, formatDate(nextSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
+    for (const badge of nextSession.badgeLinks) {
+      nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+    }
+    indexViewModel.setNextSession(nextSessionViewModel);
   }
 
-  const events = await get(`api/sections/${section.id}/terms/${currentSession.termId}/events`);
-  const eventlist = new EventListViewModel();
+  if (section != null) {
+    const termId = currentSession != null ? currentSession.termId : nextSession.termId;
+    const events = await get(`api/sections/${section.id}/terms/${termId}/events`);
+    const eventlist = new EventListViewModel();
 
-  for (const evt of events) {
-    eventlist.addEvent(evt.name, evt.date);
+    for (const evt of events) {
+      eventlist.addEvent(evt.name, evt.date);
+    }
+    indexViewModel.setUpcomingEvents(eventlist);
   }
-
-  const indexViewModel = new IndexViewModel(sectionViewModel, currentSessionViewModel, nextSessionViewModel, eventlist);
 
   ko.applyBindings(indexViewModel);
 });
