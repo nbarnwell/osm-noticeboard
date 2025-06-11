@@ -41,7 +41,7 @@ function logoUrl(sectionType) {
 
 document.addEventListener("DOMContentLoaded", async function () {
   const evenings = await get('api/evenings');
-  evenings.sort((a, b) => (new Date(b.startDateTime) - new Date(a.startDateTime) - (b.id - a.id)));
+  evenings.sort((a, b) => (new Date(a.startDateTime) - new Date(b.startDateTime) || a.id - b.id));
 
   // Find the relevant sessions
   //const now = new Date('2025-04-03T19:15:00'); //Date.now();
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const nextSession = 
     currentSession != null 
-    ? evenings.filter(x => x.sectionId === currentSession.sectionId && new Date(x.startDateTime) > new Date(currentSession.startDateTime))[0]
+    ? evenings.filter(x => x.sectionId === currentSession.sectionId && x.id !== currentSession.id && new Date(x.startDateTime) >= new Date(currentSession.startDateTime))[0]
     : evenings.filter(x => new Date(x.startDateTime) > new Date(now))[0];
 
   const section = await get(`api/sections/${currentSession != null ? currentSession.sectionId : nextSession.sectionId}`);
