@@ -20,33 +20,63 @@
     <style>
         body {
             font-family: 'Nunito Sans', sans-serif !important;
-            background-image: url('images/backgrounds/background.jpg'); /* Replace with the actual image path */
+            background-image: url('images/backgrounds/background.jpg');
+            /* Replace with the actual image path */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
+
         .card {
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Semi-transparent white */
         }
+
         .header-section {
             background-color: #00A794;
             color: white;
-            padding: 1rem;
+            padding-right: 1rem;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 1030; /* Ensure it stays above other content */
+            z-index: 1030;
+            /* Ensure it stays above other content */
         }
+
         .container-fluid {
-            padding-top: 8rem; /* Maintain padding to avoid overlap with the fixed header */
+            padding-top: 8rem;
+            /* Maintain padding to avoid overlap with the fixed header */
         }
 
         img.sectionLogo {
-            width: 200px;  /* Set your desired size */
-            height: 40px; /* Set your desired size */
-            object-fit: cover;
-            object-position: center;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 10px;
+            /* space between badges */
+            justify-content: center;
+            flex-wrap: wrap;
+            /* allow wrapping on small screens */
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: blue;
+            border: 3px solid red;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            white-space: normal;
+            word-break: break-word;
+            text-wrap: wrap;
         }
     </style>
 </head>
@@ -72,12 +102,21 @@
                             <span data-bind="text: startTime"></span> until
                             <span data-bind="text: endTime"></span> on
                             <span data-bind="text: date"></span>
-                            <p data-bind="text: notesForParents"></p>
+                        <p data-bind="text: notesForParents"></p>
                         </p>
                     </div>
                     <div class="card-footer text-muted">
-                        <div data-bind="foreach: badges">
-                            <img data-bind="attr: { src: badgeImage, alt: badgeName }" style="margin-left: 5px;">
+                        <div class="badge-container" data-bind="foreach: badges">
+                            <div>
+                                <img data-bind="
+                                    attr: { src: badgeImage, alt: badgeName },
+                                    visible: imageLoaded,
+                                    event: { error: onImageError }"
+                                    style="width: 100px; height: 100px; border-radius: 50%;" />
+
+                                <!-- Show the fallback circle if image failed -->
+                                <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -95,12 +134,21 @@
                             <span data-bind="text: startTime"></span> until
                             <span data-bind="text: endTime"></span> on
                             <span data-bind="text: date"></span>
-                            <p data-bind="text: notesForParents"></p>
+                        <p data-bind="text: notesForParents"></p>
                         </p>
                     </div>
                     <div class="card-footer text-muted">
-                        <div data-bind="foreach: badges">
-                            <img data-bind="attr: { src: badgeImage, alt: badgeName }" style="margin-left: 5px;">
+                        <div class="badge-container" data-bind="foreach: badges">
+                            <div>
+                                <img data-bind="
+                                    attr: { src: badgeImage, alt: badgeName },
+                                    visible: imageLoaded,
+                                    event: { error: onImageError }"
+                                    style="width: 100px; height: 100px; border-radius: 50%;" />
+
+                                <!-- Show the fallback circle if image failed -->
+                                <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
