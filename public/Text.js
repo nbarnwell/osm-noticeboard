@@ -1,7 +1,7 @@
 export default function toTitleCase(str) {
     const exceptions = ["a", "and", "but", "for", "nor", "of", "on", "or", "so", "the", "to", "up", "yet", "with"];
     
-    return str
+    return str || ""
         .toLowerCase()  // Convert entire string to lowercase
         .split(" ")      // Split the string into words
         .map((word, index) => {
