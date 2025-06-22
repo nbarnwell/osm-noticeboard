@@ -1,7 +1,7 @@
 import EventListViewModel from './EventListViewModel.js';
 import EventViewModel from './EventViewModel.js';
 import BadgeViewModel from './BadgeViewModel.js';
-import IndexViewModel from './IndexViewModel.js'
+import IndexViewModel from './IndexViewModel.js';
 import SectionViewModel from './SectionViewModel.js';
 import SessionViewModel from './SessionViewModel.js';
 import toTitleCase from './Text.js';
@@ -13,7 +13,7 @@ async function get(path) {
   if (!response.ok) {
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
-  const json = await response.json()
+  const json = await response.json();
   return json;
 }
 
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
   if (currentSession == null) {
-    console.log(`No current session found matching ${now}`)
+    console.log(`No current session found matching ${now}`);
   }
 
   const nextSession = 

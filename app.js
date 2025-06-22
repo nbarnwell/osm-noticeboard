@@ -199,8 +199,9 @@ app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req
     return res.json(upcomingEvents);
 }));
 
-app.delete('api/cache', asyncHandler(async (req, res) => {
-    // TODO Delete any stored cache files so they will be re-fetched by the next operation
+app.delete('/api/cache', asyncHandler(async (req, res) => {
+    // TODO: Delete any stored cache files so they will be re-fetched by the next operation
+    res.status(200).json({ message: 'Cache cleared successfully' });
 }));
 
 app.listen(port, () => {

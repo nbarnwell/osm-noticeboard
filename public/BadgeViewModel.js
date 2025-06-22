@@ -1,5 +1,14 @@
+/**
+ * View model for badge display
+ */
 export default class BadgeViewModel {
-    constructor (sectionName, badgeType, badgeName) {
+    /**
+     * Create a new badge view model
+     * @param {string} sectionName - Name of the scout section
+     * @param {string} badgeType - Type of badge
+     * @param {string} badgeName - Name of the badge
+     */
+    constructor(sectionName, badgeType, badgeName) {
         this.sectionName = ko.observable(sectionName);
         this.badgeType = ko.observable(badgeType);
         this.badgeName = ko.observable(badgeName);
@@ -7,11 +16,21 @@ export default class BadgeViewModel {
         this.imageLoaded = ko.observable(true); // default to "loaded"
     }
 
-    // Public method to be called when <img> fails
+    /**
+     * Handle image load error
+     */
     onImageError = () => {
         this.imageLoaded(false);
-    }
+    };
 
+    /**
+     * Generate badge image URL
+     * @param {string} sectionName - Name of the scout section
+     * @param {string} badgeType - Type of badge
+     * @param {string} badgeName - Name of the badge
+     * @returns {string} URL for the badge image
+     * @private
+     */
     #badgeUrl(sectionName, badgeType, badgeName) {
         return `/public/images/badges/${sectionName}/${badgeType}/${badgeName}.png`;
     }
