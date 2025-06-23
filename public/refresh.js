@@ -4,5 +4,5 @@
  * Currently disabled for development purposes
  */
 setInterval(() => {
-    //location.reload(); // Reload the page
+    location.reload(); // Reload the page
 }, 300000); // 300,000 milliseconds = 5 minutes
