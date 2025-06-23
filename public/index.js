@@ -7,7 +7,7 @@ import SessionViewModel from './SessionViewModel.js';
 import toTitleCase from './Text.js';
 
 async function get(path) {
-  const url = new URL(path, 'http://localhost:3000/');
+  const url = new URL(path, window.location.origin);
 
   const response = await fetch(url, { method: 'GET' });
   if (!response.ok) {
