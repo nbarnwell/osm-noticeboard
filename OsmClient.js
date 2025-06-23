@@ -52,7 +52,7 @@ class OsmClient {
             const now = Date.now();
 
             if (now - stats.mtimeMs < this.cacheDuration) {
-                console.log('Returning cached response from file');
+                console.log('Returning cached response from file for ' + url);
                 const data = await fs.promises.readFile(cacheFile, 'utf-8');
                 return JSON.parse(data);
             } else {
@@ -69,26 +69,32 @@ class OsmClient {
     // Private method: Fetch from API and store in cache
     async #fetchAndCache(url, cacheFile) {
         try {
-            console.log('Fetching fresh data from API');
+            console.log(`fetchAndCache: ${url}, ${cacheFile}`);
             const response = await this.#callOsm(url);
 
+            const text = await response.text();
             if (!response.ok) {
-                throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                throw new Error(`   fetchAndCache: HTTP response not OK: ${url} ${response.status} ${response.statusText}`);
             }
 
-            const data = await response.json();
-            await fs.promises.writeFile(cacheFile, JSON.stringify(data, null, 2), 'utf-8');
-            return data;
-        } catch (error) {
-            console.error('Error fetching API:', error.message);
-
-            // If API fails, return cached version if available
             try {
-                const data = await fs.promises.readFile(cacheFile, 'utf-8');
-                console.log('Returning stale cached response');
-                return JSON.parse(data);
+                const data = JSON.parse(text);
+                await fs.promises.writeFile(cacheFile, text, 'utf-8');
+                return data;
+            } catch (error) {
+                console.error(`   fetchAndCache: Error parsing JSON response. Message: ${error.message}, Original text: ${text}`);
+                throw new Error(`Invalid JSON response from API: ${url}`);
+            }
+        } catch (error) {
+            console.error('   fetchAndCache: Error calling API or handling response:', url, cacheFile, error.message);
+
+            // If anything fails, return cached version if available
+            try {
+                const text = await fs.promises.readFile(cacheFile, 'utf-8');
+                console.log('   fetchAndCache: Returning stale cached response', url, cacheFile);
+                return JSON.parse(text);
             } catch {
-                console.error('No valid cache available');
+                console.error(`   fetchAndCache: Failed reading or parsing cached response. Message: ${error.message}, Cache file: ${cacheFile}, Cached text: ${text}`);
                 return null;
             }
         }
@@ -96,7 +102,6 @@ class OsmClient {
 
     async #callOsm(url) {
         const fullUrl = new URL(url, this.osmRoot);
-        console.log("Querying " + fullUrl);
         const token = await this.#getOsmToken();
 
         if (!(await this.#apiStateIsGood())) {
@@ -213,10 +218,17 @@ class OsmClient {
 
         if (!fs.existsSync(apiStateFile)) {
             // Assume we can at least try if we have no data suggesting otherwise
+            console.log("No API state file found, assuming we can try");
             return true;
         }
 
         const previousApiStateFileContent = await fs.promises.readFile(apiStateFile, 'utf-8');
+
+        if (!previousApiStateFileContent) {
+            console.error("API state file is empty, assuming we can try");  
+            return true;
+        }
+
         const previousApiState = JSON.parse(previousApiStateFileContent, (key, value) => key === 'LastCallTime' ? new Date(value) : value);
 
         if (previousApiState.Blocked) {

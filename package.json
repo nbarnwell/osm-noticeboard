@@ -8,6 +8,14 @@
     "start": "nodemon app.js",
     "test": "node --test tests/*.js"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "logs/*",
+      "public/",
+      "cache/*",
+      "*.test.js"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nbarnwell/osm-noticeboard.git"

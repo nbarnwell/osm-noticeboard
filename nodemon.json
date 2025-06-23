@@ -1,6 +1,12 @@
 {
   "watch": [".", "server", "routes"],
   "ext": "js,json",
-  "ignore": ["node_modules"],
+  "ignore": [
+      "node_modules/",
+      "logs/*",
+      "public/",
+      "cache/*",
+      "*.test.js"
+  ],
   "exec": "node app.js"
 }
