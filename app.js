@@ -44,10 +44,22 @@ app.get('/public/images/badges/:sectionName/:badgeType/:badgeName.png', (req, re
 });
 
 const badgeUrl = (sectionName, badgeType, badgeName) => {
-    return path.join(__dirname, `public`, 'images', 'badges', badgeSubFolder(sectionName, badgeType), `${badgeFileName(sectionName, badgeType, badgeName)}-RGB.png`);
+    return path.join(__dirname, `public`, 'images', 'badges', badgeSubFolder(sectionName, badgeType), `${badgeFileName(sectionName, badgeType, badgeName)}${badgeSuffix(sectionName)}.png`);
 };
 
+const badgeSuffix = (sectionName, badgeType) => {
+    if (sectionName === 'Squirrels') {
+        return '';
+    }
+
+    return '-RGB'
+}
+
 const badgeFileName = (sectionName, badgeType, badgeName) => {
+    if (sectionName === 'Squirrels') {
+        return badgeName;
+    }
+
     if (badgeName === 'Hikes') {
         badgeName = 'Hikes Away';
     }
@@ -58,7 +70,7 @@ const badgeFileName = (sectionName, badgeType, badgeName) => {
         badgeName += '-Stage-1';
     }
 
-    return `${badgeNamePrefix(badgeType)}-${badgeSectionAbbreviation(badgeType, sectionName)}${badgeName}`;
+    return `${badgeNamePrefix(sectionName, badgeType)}-${badgeSectionAbbreviation(badgeType, sectionName)}${badgeName}`;
 };
 
 const badgeSectionAbbreviation = (badgeType, sectionName) => {
@@ -79,7 +91,7 @@ const badgeSubFolder = (sectionName, badgeType) => {
     if (badgeType === 'Activity') {
         switch (sectionName) {
             case 'Squirrels':
-                return 'activity-badges-beavers-zip-download/png';
+                return 'activity-badges-squirrels-zip-download/PNG';
             case 'Beavers':
                 return 'Activity Badges-Beavers';
             case 'Cubs':
@@ -112,7 +124,11 @@ const badgeSubFolder = (sectionName, badgeType) => {
     return `UnkownBadgeSubFolder-${sectionName}-${badgeType}`;
 };
 
-const badgeNamePrefix = (badgeType) => {
+const badgeNamePrefix = (sectionName, badgeType) => {
+    if (sectionName === 'Squirrels') {
+        return ''; 
+    }
+
     switch (badgeType) {
         case 'Activity':
             return 'Activity-Badges';
