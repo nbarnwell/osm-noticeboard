@@ -94,7 +94,7 @@ class OsmClient {
                 console.log('   fetchAndCache: Returning stale cached response', url, cacheFile);
                 return JSON.parse(text);
             } catch {
-                console.error(`   fetchAndCache: Failed reading or parsing cached response. Message: ${error.message}, Cache file: ${cacheFile}, Cached text: ${text}`);
+                console.error(`   fetchAndCache: Failed reading or parsing cached response. Message: ${error.message}, Cache file: ${cacheFile}`);
                 return null;
             }
         }
