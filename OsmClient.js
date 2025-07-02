@@ -52,11 +52,11 @@ class OsmClient {
             const now = Date.now();
 
             if (now - stats.mtimeMs < this.cacheDuration) {
-                console.log('Returning cached response from file for ' + url);
+                console.log(`Returning cached response from ${cacheFile} for ${url}`);
                 const data = await fs.promises.readFile(cacheFile, 'utf-8');
                 return JSON.parse(data);
             } else {
-                console.log('Cache expired, deleting file for ' + url);
+                console.log(`Cache expired, deleting ${cacheFile}`);
                 await fs.promises.unlink(cacheFile);
             }
         } catch (error) {
