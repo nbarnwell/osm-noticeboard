@@ -14,7 +14,7 @@ class OsmClient {
         this.osmRoot = 'https://www.onlinescoutmanager.co.uk'
 
         this.CACHE_DIR = path.join(__dirname, 'cache');
-        this.cacheDuration = 60 * 60 * 1000;
+        this.cacheDuration = 15 * 60 * 1000;
 
         // Ensure cache directory exists
         fs.promises.mkdir(this.CACHE_DIR, { recursive: true }).catch(console.error);
@@ -56,8 +56,8 @@ class OsmClient {
                 const data = await fs.promises.readFile(cacheFile, 'utf-8');
                 return JSON.parse(data);
             } else {
-                //console.log('Cache expired, deleting files');
-                //await this.#cleanupOldCache();
+                console.log('Cache expired, deleting file for ' + url);
+                await fs.promises.unlink(cacheFile);
             }
         } catch (error) {
             if (error.code !== 'ENOENT') console.error('Error checking cache:', error);
