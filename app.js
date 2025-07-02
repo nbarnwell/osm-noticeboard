@@ -204,13 +204,14 @@ app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req
 
     const events = (await queries.getEvents(sectionId, termId)).items;
     events.sort((a, b) => new Date(a.date) < new Date(b.date));
-    const now = Date.now();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const termStartDate = new Date(term.startDate);
     const to = new Date();
     to.setDate(termStartDate.getDate() + 60);
     const upcomingEvents = events.filter(x => {
         const eventDate = parseDate(x.date);
-        return eventDate >= now && eventDate <= to;
+        return eventDate >= today && eventDate <= to;
     }).slice(0, 5);
 
     return res.json(upcomingEvents);
