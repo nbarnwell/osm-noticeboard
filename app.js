@@ -44,7 +44,10 @@ app.get('/public/images/badges/:sectionName/:badgeType/:badgeName.png', (req, re
 });
 
 const badgeUrl = (sectionName, badgeType, badgeName) => {
-    return path.join(__dirname, `public`, 'images', 'badges', badgeSubFolder(sectionName, badgeType), `${badgeFileName(sectionName, badgeType, badgeName)}${badgeSuffix(sectionName)}.png`);
+    const badgeSubFolderName = badgeSubFolder(sectionName, badgeType);
+    const badgeFileNameName = badgeFileName(sectionName, badgeType, badgeName);
+    const badgeSuffixName = badgeSuffix(sectionName, badgeType);
+    return path.join(__dirname, `public`, 'images', 'badges', badgeSubFolderName, `${badgeFileNameName}${badgeSuffixName}.png`);
 };
 
 const badgeSuffix = (sectionName, badgeType) => {
@@ -115,7 +118,7 @@ const badgeSubFolder = (sectionName, badgeType) => {
             case 'Cubs':
                 return 'Challenge Award Badges-Cubs';
             case 'Scouts':
-                return null;
+                return '';
             default:
                 return `UnknownBadgeSubFolder-${sectionName}-${badgeType}`;
         }
