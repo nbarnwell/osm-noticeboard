@@ -188,8 +188,14 @@
                         <h5 class="card-title fw-bold text-primary">Upcoming Events</h5>
                         <ul class="list-group list-group-flush" data-bind="foreach: eventList">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span class="fw-bold" data-bind="text: title">Event Title</span>
-                                <span class="text-muted small" data-bind="text: date">DD/MM/YYYY</span>
+                                <div>
+                                    <div class="fw-bold" data-bind="text: title">Event Title</div>
+                                    <div class="text-muted small fw-light" data-bind="text: location">Location</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-muted small" data-bind="text: date">DD/MM/YYYY</div>
+                                    <div class="text-muted small" data-bind="text: formattedCost">Cost</div>
+                                </div>
                             </li>
                         </ul>
                     </div>

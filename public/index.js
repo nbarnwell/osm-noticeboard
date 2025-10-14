@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const eventlist = new EventListViewModel();
 
     for (const evt of events) {
-      eventlist.addEvent(evt.name, evt.date);
+      eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
     }
     indexViewModel.setUpcomingEvents(eventlist);
   }
