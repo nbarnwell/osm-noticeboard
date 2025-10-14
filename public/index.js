@@ -35,6 +35,26 @@ function formatDate(dateString) {
   });
 }
 
+/**
+ * Set the page load timestamp in the bottom-right corner
+ */
+function setPageLoadTimestamp() {
+  const now = new Date();
+  const timestampElement = document.getElementById('page-timestamp');
+  if (timestampElement) {
+    const formattedDateTime = now.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    timestampElement.textContent = `Loaded: ${formattedDateTime}`;
+  }
+}
+
 function logoUrl(sectionType) {
   return `/images/sections/${sectionType}.png`;
 }
@@ -90,4 +110,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   ko.applyBindings(indexViewModel);
+  
+  // Set the page load timestamp
+  setPageLoadTimestamp();
 });
