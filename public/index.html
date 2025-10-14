@@ -113,11 +113,17 @@
                         <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-primary"></h3>
                         <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
                         <p class="card-text">
-                            <span class="fw-bold">Time:</span>
-                            <span data-bind="text: startTime"></span> until
-                            <span data-bind="text: endTime"></span> on
-                            <span data-bind="text: date"></span>
-                        <p data-bind="text: notesForParents"></p>
+                            <p>
+                                <span class="fw-bold">Time:</span>
+                                <span data-bind="text: startTime"></span> until
+                                <span data-bind="text: endTime"></span> on
+                                <span data-bind="text: date"></span>
+                            </p>
+                            <p data-bind="visible: function() { return parentsRequired() > 0; }">
+                                <span class="fw-bold">Parents helpers required:</span>
+                                <span data-bind="text: parentsRequired"></span>
+                            </p>
+                            <p data-bind="text: notesForParents"></p>
                         </p>
                     </div>
                     <div class="card-footer text-muted">
@@ -145,11 +151,17 @@
                         <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-success"></h3>
                         <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
                         <p class="card-text">
-                            <span class="fw-bold">Time:</span>
-                            <span data-bind="text: startTime"></span> until
-                            <span data-bind="text: endTime"></span> on
-                            <span data-bind="text: date"></span>
-                        <p data-bind="text: notesForParents"></p>
+                            <p>
+                                <span class="fw-bold">Time:</span>
+                                <span data-bind="text: startTime"></span> until
+                                <span data-bind="text: endTime"></span> on
+                                <span data-bind="text: date"></span>
+                            </p>
+                            <p data-bind="visible: function() { return parentsRequired() > 0; }">
+                                <span class="fw-bold">Parents helpers required:</span>
+                                <span data-bind="text: parentsRequired"></span>
+                            </p>
+                            <p data-bind="text: notesForParents"></p>
                         </p>
                     </div>
                     <div class="card-footer text-muted">

@@ -83,7 +83,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   indexViewModel.setCurrentSection(sectionViewModel);
 
   if (currentSession != null) {
-    const currentSessionViewModel = new SessionViewModel(currentSession.id, currentSession.title, formatDate(currentSession.startDateTime), `${formatTime(currentSession.startDateTime)}`, `${formatTime(currentSession.endDateTime)}`, currentSession.notesForParents);
+    const currentSessionViewModel = 
+      new SessionViewModel(
+        currentSession.id,
+        currentSession.title,
+        formatDate(currentSession.startDateTime),
+        `${formatTime(currentSession.startDateTime)}`,
+        `${formatTime(currentSession.endDateTime)}`,
+        currentSession.notesForParents,
+        currentSession.parentsRequired);
     for (const badge of currentSession.badgeLinks) {
       currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
     }
@@ -91,7 +99,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   if (nextSession != null) {
-    const nextSessionViewModel = new SessionViewModel(nextSession.id, nextSession.title, formatDate(nextSession.startDateTime), `${formatTime(nextSession.startDateTime)}`, `${formatTime(nextSession.endDateTime)}`, nextSession.notesForParents);
+    const nextSessionViewModel = 
+      new SessionViewModel(
+        nextSession.id,
+        nextSession.title,
+        formatDate(nextSession.startDateTime),
+        `${formatTime(nextSession.startDateTime)}`,
+        `${formatTime(nextSession.endDateTime)}`,
+        nextSession.notesForParents,
+        nextSession.parentsRequired);
     for (const badge of nextSession.badgeLinks) {
       nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
     }

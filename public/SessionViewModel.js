@@ -10,14 +10,16 @@ export default class SessionViewModel {
      * @param {string} startTime - Start time
      * @param {string} endTime - End time
      * @param {string} notesForParents - Notes for parents
+     * @param {number} parentsRequired - Number of parents required
      */
-    constructor(id, title, date, startTime, endTime, notesForParents) {
+    constructor(id, title, date, startTime, endTime, notesForParents, parentsRequired) {
         this.id = ko.observable(id);
         this.title = ko.observable(title);
         this.date = ko.observable(date);
         this.startTime = ko.observable(startTime);
         this.endTime = ko.observable(endTime);
         this.notesForParents = ko.observable(notesForParents);
+        this.parentsRequired = ko.observable(parentsRequired);
         this.badges = ko.observableArray([]);
     }
 
