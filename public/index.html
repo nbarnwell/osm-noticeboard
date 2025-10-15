@@ -63,6 +63,20 @@
             font-family: 'Nunito Sans', sans-serif;
         }
 
+        .clock-label {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: white;
+            color: #333;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            font-family: 'Nunito Sans', sans-serif;
+        }
+
         img.sectionLogo {
             height: 6rem;
         }
@@ -206,6 +220,9 @@
 
     <!-- Timestamp label -->
     <div class="timestamp-label" id="page-timestamp"></div>
+
+    <!-- Ticking clock label -->
+    <div class="clock-label" id="page-clock"></div>
 
     <script type="module" src="index.js"></script>
     <script src="refresh.js"></script> <!-- External script for auto-refresh -->

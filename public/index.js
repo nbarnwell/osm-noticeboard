@@ -55,6 +55,30 @@ function setPageLoadTimestamp() {
   }
 }
 
+/**
+ * Start ticking clock in the bottom left
+ */
+function startClock() {
+  const clockElement = document.getElementById('page-clock');
+  function updateClock() {
+    const now = new Date();
+    const formattedDateTime = now.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    if (clockElement) {
+      clockElement.textContent = formattedDateTime;
+    }
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
 function logoUrl(sectionType) {
   return `/images/sections/${sectionType}.png`;
 }
@@ -129,4 +153,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   
   // Set the page load timestamp
   setPageLoadTimestamp();
+    // Start ticking clock
+    startClock();
 });

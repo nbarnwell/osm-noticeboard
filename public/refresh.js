@@ -22,7 +22,7 @@ if (AUTO_REFRESH_ENABLED) {
     nextRefresh.setMinutes(nextQuarterMinutes, 0, 0);
     if (nextQuarter === 60) nextRefresh.setHours(now.getHours() + 1);
 
-    const timeUntilRefresh = nextRefresh - now;
+    const timeUntilRefresh = Math.max(nextRefresh - now, 30_000);
 
     console.log(
       `[Noticeboard] Next auto-refresh scheduled at ${nextRefresh.toLocaleTimeString()} (${Math.round(
