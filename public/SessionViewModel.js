@@ -21,6 +21,9 @@ export default class SessionViewModel {
         this.notesForParents = ko.observable(notesForParents);
         this.parentsRequired = ko.observable(parentsRequired);
         this.badges = ko.observableArray([]);
+
+            // Computed observable for visibility
+            this.showParentsRequired = ko.computed(() => this.parentsRequired() > 0);
     }
 
     /**

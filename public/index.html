@@ -133,7 +133,7 @@
                                 <span data-bind="text: endTime"></span> on
                                 <span data-bind="text: date"></span>
                             </p>
-                            <p data-bind="visible: function() { return parentsRequired() > 0; }">
+                            <p data-bind="visible: showParentsRequired">
                                 <span class="fw-bold">Parents helpers required:</span>
                                 <span data-bind="text: parentsRequired"></span>
                             </p>
@@ -171,7 +171,7 @@
                                 <span data-bind="text: endTime"></span> on
                                 <span data-bind="text: date"></span>
                             </p>
-                            <p data-bind="visible: function() { return parentsRequired() > 0; }">
+                            <p data-bind="visible: showParentsRequired">
                                 <span class="fw-bold">Parents helpers required:</span>
                                 <span data-bind="text: parentsRequired"></span>
                             </p>
