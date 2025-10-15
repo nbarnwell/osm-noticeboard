@@ -60,6 +60,10 @@ const badgeSuffix = (sectionName, badgeType) => {
 
 const badgeFileName = (sectionName, badgeType, badgeName) => {
     if (sectionName === 'Squirrels') {
+        if (badgeName === 'Story Time') {
+            return 'Storytime';
+        }
+
         return badgeName;
     }
 
@@ -94,7 +98,7 @@ const badgeSubFolder = (sectionName, badgeType) => {
     if (badgeType === 'Activity') {
         switch (sectionName) {
             case 'Squirrels':
-                return 'activity-badges-squirrels-zip-download/PNG';
+                return 'activity-badges-squirrels-zip-download//PNG';
             case 'Beavers':
                 return 'Activity Badges-Beavers';
             case 'Cubs':
@@ -113,6 +117,8 @@ const badgeSubFolder = (sectionName, badgeType) => {
     // Challenge badges are for each section
     if (badgeType === 'Challenge') {
         switch (sectionName) {
+            case 'Squirrels':
+                return 'activity-badges-squirrels-zip-download//PNG';
             case 'Beavers':
                 return 'Challenge Award Badges-Beavers';
             case 'Cubs':
