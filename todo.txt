@@ -1,16 +1,5 @@
 Tasks:
-* Cope with expired tokens and automatically obtaining new ones
 * Means of refreshing caches (so curl command can be executed around 4pm)
 * Some sort of warning for meetings with midnight as both the start and end time
-* Extra information to display for each session:
-    - Badge images
-    - Parent notes
-    - Parents required & notesforhelpingparents
-* Display upcoming events (there is no API or UI for this at all)
 * Branding
-    - Review style guide at https://scoutsbrand.org.uk/catalogue/item/digital-style-guide
-    - Use the actual section logos from https://scoutsbrand.org.uk/catalogue/category/digital/logos/section-logos in place of H1 text
-    - Use font from https://scoutsbrand.org.uk/catalogue/category/digital/font
-    - Download and map all badges from https://scoutsbrand.org.uk/catalogue/category/digital/badges/section-badges rather than stealing OSM's bandwidth
-    - Use some images from https://scoutsbrand.org.uk/catalogue/category/digital/image-library as background images
 * Possible bug - does the next session come from whatever the next "cubs" session is, regardless whether it's technically a different pack?
