@@ -66,6 +66,18 @@ async function loadTerms() {
     displayJson(json);
 }
 
+async function loadTermsRaw() {
+    const url = 'http://localhost:3000/api/termsRaw';
+
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const json = await response.json();
+    window.osm_termsraw = json; // For debugging
+    displayJson(json);
+}
+
 /**
  * Load section configuration data
  */

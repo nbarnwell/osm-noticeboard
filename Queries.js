@@ -23,6 +23,11 @@ export default class Queries {
         return sections;
     };
 
+    getTermsRaw = async function () {
+        const res = await this.osmClient.getTerms();
+        return res;
+    }
+
     getTerms = async function () {
         const res = await this.osmClient.getTerms();
         const sectionIds = Object.keys(res).map(x => parseInt(x));
