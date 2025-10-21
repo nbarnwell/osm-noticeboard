@@ -62,6 +62,7 @@ async function loadTerms() {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const json = await response.json();
+    window.osm_terms = json; // For debugging
     displayJson(json);
 }
 

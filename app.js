@@ -150,6 +150,12 @@ const badgeNamePrefix = (sectionName, badgeType) => {
     }
 };
 
+app.get('/api/terms', asyncHandler(async (req, res) => {
+    const queries = new Queries();
+    const terms = await queries.getTerms();
+    res.json(terms);
+}));
+
 app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTerms();
@@ -185,6 +191,8 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
                 })
         )
     ).flat(); // Flatten the resulting array of arrays
+    
+    console.log(`Returning ${evenings.length} evenings for current date: ${now.toISOString()}`);
     
     res.json(evenings);
 }));
