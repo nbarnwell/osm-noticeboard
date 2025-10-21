@@ -49,7 +49,7 @@ class OsmClient {
 
         try {
             const stats = await fs.promises.stat(cacheFile);
-            const now = Date.now();
+            const now = new Date();
 
             if (now - stats.mtimeMs < this.cacheDuration) {
                 console.log(`Returning cached response from ${cacheFile} for ${url}`);
@@ -236,7 +236,7 @@ class OsmClient {
             return false;
         }
 
-        const date = Date.now();
+        const date = new Date();
         if (previousApiState.tooManyRequests && date < previousApiState.RetryAfterTime) {
             console.error("Can't try again until ", previousApiState.RetryAfterTime)
             return false;
@@ -254,7 +254,7 @@ class OsmClient {
     async #cleanupOldCache() {
         try {
             const files = await fs.promises.readdir(this.CACHE_DIR);
-            const now = Date.now();
+            const now = new Date();
 
             for (const file of files) {
                 const filePath = path.join(this.CACHE_DIR, file);

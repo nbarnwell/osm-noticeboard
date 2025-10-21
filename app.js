@@ -154,8 +154,9 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTerms();
     // const now = new Date('2025-04-03T19:15:00'); // Simulated current date
-    const now = Date.now(); // Current date and time
-    
+    const now = new Date();
+    console.log(`Fetching evenings for current date: ${now.toISOString()}`);
+
     const evenings = (
         await Promise.all(
             terms.filter(term => term.startDate <= now && term.endDate >= now)
@@ -232,5 +233,5 @@ app.delete('/api/cache', asyncHandler(async (req, res) => {
 }));
 
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port} -----------------------------------------------------------`);
 });
