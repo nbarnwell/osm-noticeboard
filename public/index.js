@@ -89,12 +89,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Find the relevant sessions
   //const now = new Date('2025-04-03T19:15:00'); //Date.now();
-  const now = Date.now();
+  const now = new Date();
   const indexViewModel = new IndexViewModel();
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
   if (currentSession == null) {
-    console.log(`No current session found matching timestamp ${now}`);
+    console.log(`No current session found matching timestamp ${now}`, evenings);
   } else {
     console.log(`Current session found matching timestamp ${now}: ${currentSession.title}`);
   }

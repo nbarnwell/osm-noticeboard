@@ -159,7 +159,7 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
 
     const evenings = (
         await Promise.all(
-            terms.filter(term => term.startDate <= now && term.endDate >= now)
+            terms.filter(term => new Date(term.startDate) <= now && new Date(term.endDate) >= now)
                 .map(async term => {
                     const programme = await queries.getProgramme(term.sectionId, term.id);
                     
