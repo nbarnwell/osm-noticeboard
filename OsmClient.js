@@ -111,7 +111,6 @@ class OsmClient {
         const response = await fetch(fullUrl.toString(), {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': 'Bearer ' + token
             },
         });
