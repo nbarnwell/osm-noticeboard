@@ -94,7 +94,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
   if (currentSession == null) {
-    console.log(`No current session found matching ${now}`);
+    console.log(`No current session found matching timestamp ${now}`);
+  } else {
+    console.log(`Current session found matching timestamp ${now}: ${currentSession.title}`);
   }
 
   const nextSession = 
