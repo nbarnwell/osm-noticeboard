@@ -9,20 +9,17 @@ const AUTO_REFRESH_ENABLED = true; // Set to false in development
 if (AUTO_REFRESH_ENABLED) {
   function scheduleNextRefresh() {
     const now = new Date();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-    const milliseconds = now.getMilliseconds();
 
-    // Next refresh at the next quarter-hour mark
-    const nextQuarter = Math.ceil(minutes / 15) * 15;
-    const nextQuarterMinutes = nextQuarter === 60 ? 0 : nextQuarter;
+    // Calculate next quarter-hour
+    let nextQuarter = Math.floor(now.getMinutes() / 15) * 15 + 15;
+    let nextRefresh = new Date(now);
+    if (nextQuarter >= 60) {
+      nextQuarter -= 60;
+      nextRefresh.setHours(now.getHours() + 1);
+    }
+    nextRefresh.setMinutes(nextQuarter, 0, 0);
 
-    // Calculate target time
-    const nextRefresh = new Date(now);
-    nextRefresh.setMinutes(nextQuarterMinutes, 0, 0);
-    if (nextQuarter === 60) nextRefresh.setHours(now.getHours() + 1);
-
-    const timeUntilRefresh = Math.max(nextRefresh - now, 30_000);
+    const timeUntilRefresh = nextRefresh - now;
 
     console.log(
       `[Noticeboard] Next auto-refresh scheduled at ${nextRefresh.toLocaleTimeString()} (${Math.round(
