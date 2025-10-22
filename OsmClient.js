@@ -82,11 +82,12 @@ class OsmClient {
         const tryFetch = async (attempt) => {
             try {
                 const response = await this.#callOsm(url);
+                const text = await response.text();
                 if (!response.ok) {
+                    console.error(`   fetchAndCache.tryFetch: HTTP ${response.status} ${response.statusText} for ${url} ${text}`);
                     throw new Error(`HTTP ${response.status} ${response.statusText} for ${url}`);
                 }
 
-                const text = await response.text();
                 const data = JSON.parse(text);
 
                 await fs.promises.writeFile(cacheFile, text, 'utf-8');
