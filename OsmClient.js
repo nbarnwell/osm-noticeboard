@@ -68,36 +68,56 @@ class OsmClient {
 
     // Private method: Fetch from API and store in cache
     async #fetchAndCache(url, cacheFile) {
-        try {
-            console.log(`fetchAndCache: ${url}, ${cacheFile}`);
-            const response = await this.#callOsm(url);
+        console.log(`fetchAndCache: ${url}, ${cacheFile}`);
 
-            const text = await response.text();
-            if (!response.ok) {
-                throw new Error(`   fetchAndCache: HTTP response not OK: ${url} ${response.status} ${response.statusText}`);
-            }
-
+        const tryReadCache = async () => {
             try {
+                const cachedText = await fs.promises.readFile(cacheFile, 'utf-8');
+                return JSON.parse(cachedText);
+            } catch {
+                return null;
+            }
+        };
+
+        const tryFetch = async (attempt) => {
+            try {
+                const response = await this.#callOsm(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} ${response.statusText} for ${url}`);
+                }
+
+                const text = await response.text();
                 const data = JSON.parse(text);
+
                 await fs.promises.writeFile(cacheFile, text, 'utf-8');
                 return data;
             } catch (error) {
-                console.error(`   fetchAndCache: Error parsing JSON response. Message: ${error.message}, Original text: ${text}`);
-                throw new Error(`Invalid JSON response from API: ${url}`);
-            }
-        } catch (error) {
-            console.error('   fetchAndCache: Error calling API or handling response:', url, cacheFile, error.message);
-
-            // If anything fails, return cached version if available
-            try {
-                const text = await fs.promises.readFile(cacheFile, 'utf-8');
-                console.log('   fetchAndCache: Returning stale cached response', url, cacheFile);
-                return JSON.parse(text);
-            } catch {
-                console.error(`   fetchAndCache: Failed reading or parsing cached response. Message: ${error.message}, Cache file: ${cacheFile}`);
+                console.error(`   fetchAndCache: Attempt ${attempt} failed for ${url} (${error.message})`);
                 return null;
             }
+        };
+
+        // --- Try first fetch ---
+        let data = await tryFetch(1);
+
+        // --- Retry once after 1s if failed ---
+        if (!data) {
+            console.log(`   fetchAndCache: Retrying ${url} after 1 second...`);
+            await new Promise(r => setTimeout(r, 1000));
+            data = await tryFetch(2);
         }
+
+        if (data) return data;
+
+        // --- Fallback to cache if both attempts failed ---
+        const cached = await tryReadCache();
+        if (cached) {
+            console.warn(`   fetchAndCache: Using cached data for ${url}`);
+            return cached;
+        }
+
+        console.error(`   fetchAndCache: No usable data or cache for ${url}`);
+        return null;
     }
 
     async #callOsm(url) {
