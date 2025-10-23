@@ -121,36 +121,38 @@
         <div class="row g-4">
             <!-- Now Section -->
             <div class="col-md-6 col-lg-4" data-bind="if: currentSession">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Now:</h5>
-                        <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-primary"></h3>
-                        <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
-                        <p class="card-text">
-                            <p>
-                                <span class="fw-bold">Time:</span>
-                                <span data-bind="text: startTime"></span> until
-                                <span data-bind="text: endTime"></span> on
-                                <span data-bind="text: date"></span>
+                <div data-bind="with: currentSession">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Now:</h5>
+                            <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-primary"></h3>
+                            <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
+                            <p class="card-text">
+                                <p>
+                                    <span class="fw-bold">Time:</span>
+                                    <span data-bind="text: startTime"></span> until
+                                    <span data-bind="text: endTime"></span> on
+                                    <span data-bind="text: date"></span>
+                                </p>
+                                <p data-bind="visible: showParentsRequired">
+                                    <span class="fw-bold">Parents helpers required:</span>
+                                    <span data-bind="text: parentsRequired"></span>
+                                </p>
+                                <p data-bind="text: notesForParents"></p>
                             </p>
-                            <p data-bind="visible: showParentsRequired">
-                                <span class="fw-bold">Parents helpers required:</span>
-                                <span data-bind="text: parentsRequired"></span>
-                            </p>
-                            <p data-bind="text: notesForParents"></p>
-                        </p>
-                    </div>
-                    <div class="card-footer text-muted">
-                        <div class="badge-container" data-bind="foreach: badges">
-                            <div>
-                                <img data-bind="
-                                    attr: { src: badgeImage, alt: badgeName },
-                                    visible: imageLoaded,
-                                    event: { error: onImageError }"
-                                    style="width: 100px; height: 100px; border-radius: 50%;" />
+                        </div>
+                        <div class="card-footer text-muted">
+                            <div class="badge-container" data-bind="foreach: badges">
+                                <div>
+                                    <img data-bind="
+                                        attr: { src: badgeImage, alt: badgeName },
+                                        visible: imageLoaded,
+                                        event: { error: onImageError }"
+                                        style="width: 100px; height: 100px; border-radius: 50%;" />
 
-                                <!-- Show the fallback circle if image failed -->
-                                <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                                    <!-- Show the fallback circle if image failed -->
+                                    <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -159,36 +161,38 @@
 
             <!-- Next Section -->
             <div class="col-md-6 col-lg-4" data-bind="if: nextSession">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Next time:</h5>
-                        <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-success"></h3>
-                        <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
-                        <p class="card-text">
-                            <p>
-                                <span class="fw-bold">Time:</span>
-                                <span data-bind="text: startTime"></span> until
-                                <span data-bind="text: endTime"></span> on
-                                <span data-bind="text: date"></span>
+                <div data-bind="with: nextSession">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Next time:</h5>
+                            <h3 data-bind="text: title, attr: { alt: id }" class="card-subtitle mb-2 text-success"></h3>
+                            <!--<p>Meeting ID: <span data-bind="text: id"></span></p>-->
+                            <p class="card-text">
+                                <p>
+                                    <span class="fw-bold">Time:</span>
+                                    <span data-bind="text: startTime"></span> until
+                                    <span data-bind="text: endTime"></span> on
+                                    <span data-bind="text: date"></span>
+                                </p>
+                                <p data-bind="visible: showParentsRequired">
+                                    <span class="fw-bold">Parents helpers required:</span>
+                                    <span data-bind="text: parentsRequired"></span>
+                                </p>
+                                <p data-bind="text: notesForParents"></p>
                             </p>
-                            <p data-bind="visible: showParentsRequired">
-                                <span class="fw-bold">Parents helpers required:</span>
-                                <span data-bind="text: parentsRequired"></span>
-                            </p>
-                            <p data-bind="text: notesForParents"></p>
-                        </p>
-                    </div>
-                    <div class="card-footer text-muted">
-                        <div class="badge-container" data-bind="foreach: badges">
-                            <div>
-                                <img data-bind="
-                                    attr: { src: badgeImage, alt: badgeName },
-                                    visible: imageLoaded,
-                                    event: { error: onImageError }"
-                                    style="width: 100px; height: 100px; border-radius: 50%;" />
+                        </div>
+                        <div class="card-footer text-muted">
+                            <div class="badge-container" data-bind="foreach: badges">
+                                <div>
+                                    <img data-bind="
+                                        attr: { src: badgeImage, alt: badgeName },
+                                        visible: imageLoaded,
+                                        event: { error: onImageError }"
+                                        style="width: 100px; height: 100px; border-radius: 50%;" />
 
-                                <!-- Show the fallback circle if image failed -->
-                                <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                                    <!-- Show the fallback circle if image failed -->
+                                    <div class="badge" data-bind="visible: !imageLoaded(), text: badgeName"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -196,22 +200,24 @@
             </div>
 
             <!-- Upcoming Events Section -->
-            <div class="col-12 col-lg-4" data-bind="if: upcomingEvents && upcomingEvents.eventList && upcomingEvents.eventList().length > 0">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold text-primary">Upcoming Events</h5>
-                        <ul class="list-group list-group-flush" data-bind="foreach: eventList">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold" data-bind="text: title">Event Title</div>
-                                    <div class="text-muted small fw-light" data-bind="text: location">Location</div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="text-muted small" data-bind="text: date">DD/MM/YYYY</div>
-                                    <div class="text-muted small" data-bind="text: formattedCost">Cost</div>
-                                </div>
-                            </li>
-                        </ul>
+            <div class="col-12 col-lg-4" data-bind="if: upcomingEvents">
+                <div data-bind="with: upcomingEvents">
+                    <div class="card shadow-sm" data-bind="if: eventList().length > 0">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-primary">Upcoming Events</h5>
+                            <ul class="list-group list-group-flush" data-bind="foreach: eventList">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold" data-bind="text: title">Event Title</div>
+                                        <div class="text-muted small fw-light" data-bind="text: location">Location</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-muted small" data-bind="text: date">DD/MM/YYYY</div>
+                                        <div class="text-muted small" data-bind="text: formattedCost">Cost</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

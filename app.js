@@ -165,8 +165,23 @@ app.get('/api/terms', asyncHandler(async (req, res) => {
 app.get('/api/evenings', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTerms();
-    // const now = new Date('2025-04-03T19:15:00'); // Simulated current date
-    const now = new Date();
+    
+    const nowParam = req.query.now;
+    let now;
+
+    if (nowParam === undefined) {
+        now = new Date();
+    } else {
+        const parsed = Date.parse(nowParam);
+        if (isNaN(parsed)) {
+            return res.status(400).json({
+                error: "Invalid 'now' parameter",
+                message: "The 'now' query parameter must be a valid ISO 8601 date-time string, e.g. 2025-04-03T19:15:00Z"
+            });
+        }
+        now = new Date(parsed);
+    }
+
     console.log(`Fetching evenings for current date: ${now.toISOString()}`);
 
     const evenings = (

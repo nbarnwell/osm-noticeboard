@@ -6,15 +6,24 @@ import SectionViewModel from './SectionViewModel.js';
 import SessionViewModel from './SessionViewModel.js';
 import toTitleCase from './Text.js';
 
-async function get(path) {
+async function get(path, params = {}) {
   const url = new URL(path, window.location.origin);
 
+  // Add query params if provided
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      url.searchParams.set(key, value);
+    }
+  });
+
   const response = await fetch(url, { method: 'GET' });
+
   if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
   }
-  const json = await response.json();
-  return json;
+
+  return response.json();
 }
 
 function formatTime(dateString) {
@@ -89,12 +98,17 @@ function getBadgeFilename(badge) {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const evenings = await get('api/evenings');
+  // Parse the query string on the current page
+  const urlParams = new URLSearchParams(window.location.search);
+  const nowParam = urlParams.get('now');
+
+  // Use the query parameter if present, otherwise use the current date
+  const now = nowParam ? new Date(nowParam) : new Date();
+
+  const evenings = await get('api/evenings', { now: now.toISOString() });
   evenings.sort((a, b) => (new Date(a.startDateTime) - new Date(b.startDateTime) || a.id - b.id));
 
   // Find the relevant sessions
-  //const now = new Date('2025-04-03T19:15:00'); //Date.now();
-  const now = new Date();
   const indexViewModel = new IndexViewModel();
 
   const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
