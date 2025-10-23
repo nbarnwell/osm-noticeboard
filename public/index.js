@@ -109,10 +109,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     ? evenings.filter(x => x.sectionId === currentSession.sectionId && x.id !== currentSession.id && new Date(x.startDateTime) >= new Date(currentSession.startDateTime))[0]
     : evenings.filter(x => new Date(x.startDateTime) > new Date(now))[0];
 
-  const section = await get(`api/sections/${currentSession != null ? currentSession.sectionId : nextSession.sectionId}`);
-  const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
-  indexViewModel.setCurrentSection(sectionViewModel);
-
   if (currentSession != null) {
     const currentSessionViewModel = 
       new SessionViewModel(
@@ -145,15 +141,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     indexViewModel.setNextSession(nextSessionViewModel);
   }
 
-  if (section != null) {
-    const termId = currentSession != null ? currentSession.termId : nextSession.termId;
-    const events = await get(`api/sections/${section.id}/terms/${termId}/events`);
-    const eventlist = new EventListViewModel();
+  if (currentSession != null || nextSession != null) {
+    const section = await get(`api/sections/${currentSession != null ? currentSession.sectionId : nextSession.sectionId}`);
+    const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
+    indexViewModel.setCurrentSection(sectionViewModel);
 
-    for (const evt of events) {
-      eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
+    if (section != null) {
+      const termId = currentSession != null ? currentSession.termId : nextSession.termId;
+      const events = await get(`api/sections/${section.id}/terms/${termId}/events`);
+      const eventlist = new EventListViewModel();
+
+      for (const evt of events) {
+        eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
+      }
+      indexViewModel.setUpcomingEvents(eventlist);
     }
-    indexViewModel.setUpcomingEvents(eventlist);
   }
 
   ko.applyBindings(indexViewModel);
