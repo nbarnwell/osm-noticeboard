@@ -83,6 +83,11 @@ function logoUrl(sectionType) {
   return `/images/sections/${sectionType}.png`;
 }
 
+function getBadgeFilename(badge) {
+  if (!badge || typeof badge.picture !== "string") return null;
+  return badge.picture.split('/').pop();
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
   const evenings = await get('api/evenings');
   evenings.sort((a, b) => (new Date(a.startDateTime) - new Date(b.startDateTime) || a.id - b.id));
@@ -119,7 +124,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentSession.notesForParents,
         currentSession.parentsRequired);
     for (const badge of currentSession.badgeLinks) {
-      currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+      currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName, getBadgeFilename(badge)));
     }
     indexViewModel.setCurrentSession(currentSessionViewModel);
   }
@@ -135,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         nextSession.notesForParents,
         nextSession.parentsRequired);
     for (const badge of nextSession.badgeLinks) {
-      nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName));
+      nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName, getBadgeFilename(badge)));
     }
     indexViewModel.setNextSession(nextSessionViewModel);
   }

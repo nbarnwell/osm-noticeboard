@@ -7,13 +7,15 @@ export default class BadgeViewModel {
      * @param {string} sectionName - Name of the scout section
      * @param {string} badgeType - Type of badge
      * @param {string} badgeName - Name of the badge
+     * @param {string} [osmBadgeFilename] - Optional filename from OSM
      */
-    constructor(sectionName, badgeType, badgeName) {
+    constructor(sectionName, badgeType, badgeName, osmBadgeFilename) {
         this.sectionName = ko.observable(sectionName);
         this.badgeType = ko.observable(badgeType);
         this.badgeName = ko.observable(badgeName);
-        this.badgeImage = ko.observable(this.#badgeUrl(sectionName, badgeType, badgeName));
+        this.badgeImage = ko.observable(this.#osmBadgeUrl(osmBadgeFilename) || this.#badgeUrl(sectionName, badgeType, badgeName));
         this.imageLoaded = ko.observable(true); // default to "loaded"
+        this.osmBadgeFilename = ko.observable(osmBadgeFilename || null);
     }
 
     /**
@@ -33,5 +35,9 @@ export default class BadgeViewModel {
      */
     #badgeUrl(sectionName, badgeType, badgeName) {
         return `/public/images/badges/${sectionName}/${badgeType}/${badgeName}.png`;
+    }
+
+    #osmBadgeUrl(osmBadgeFilename) {
+        return `https://oymcdn.co.uk/sites/onlinescoutmanager.co.uk/badge_images/${osmBadgeFilename}`;
     }
 }
