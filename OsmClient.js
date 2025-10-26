@@ -45,7 +45,10 @@ class OsmClient {
     }
 
     async #fetchWithCache(url) {
-        const cacheFile = path.join(this.CACHE_DIR, encodeURIComponent(url) + '.json');
+        // Replace only illegal filename characters for Windows/Unix
+        // Windows: < > : " / \ | ? * and control chars; Unix: /
+        const safeFilename = url.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+        const cacheFile = path.join(this.CACHE_DIR, safeFilename + '.json');
 
         try {
             const stats = await fs.promises.stat(cacheFile);
@@ -68,32 +71,35 @@ class OsmClient {
 
     // Private method: Fetch from API and store in cache
     async #fetchAndCache(url, cacheFile) {
-        console.log(`fetchAndCache: ${url}, ${cacheFile}`);
+        console.log(`OsmClient.#fetchAndCache: ${url}, ${cacheFile}`);
 
         const tryReadCache = async () => {
             try {
                 const cachedText = await fs.promises.readFile(cacheFile, 'utf-8');
                 return JSON.parse(cachedText);
-            } catch {
+            } catch (error) {
+                if (error.code !== 'ENOENT' && error.errno !== -4058) {
+                    console.error(`OsmClient.#fetchAndCache.tryReadCache: Unable to read cache file ${cacheFile}`, error);
+                }
                 return null;
             }
         };
 
         const tryFetch = async (attempt) => {
+            const response = await this.#callOsm(url);
+            const responseText = await response.text()
+            const text = responseText.replace(/^var data_holder = /, '');
+            if (!response.ok) {
+                console.error(`OsmClient.#fetchAndCache.tryFetch(${attempt}) ${response.status} ${response.statusText} ${url}. Response text: ${text}`, error);
+                return null;
+            }
+
             try {
-                const response = await this.#callOsm(url);
-                const text = await response.text();
-                if (!response.ok) {
-                    console.error(`   fetchAndCache.tryFetch: HTTP ${response.status} ${response.statusText} for ${url} ${text}`);
-                    throw new Error(`HTTP ${response.status} ${response.statusText} for ${url}`);
-                }
-
                 const data = JSON.parse(text);
-
                 await fs.promises.writeFile(cacheFile, text, 'utf-8');
                 return data;
             } catch (error) {
-                console.error(`   fetchAndCache: Attempt ${attempt} failed for ${url} (${error.message})`);
+                console.error(`OsmClient.#fetchAndCache.tryFetch(${attempt}) failed to parse JSON for ${url}. Response text: ${text}`, error);
                 return null;
             }
         };
@@ -103,7 +109,7 @@ class OsmClient {
 
         // --- Retry once after 1s if failed ---
         if (!data) {
-            console.log(`   fetchAndCache: Retrying ${url} after 1 second...`);
+            console.log(`OsmClient.#fetchAndCache: Retrying ${url} after 1 second...`);
             await new Promise(r => setTimeout(r, 1000));
             data = await tryFetch(2);
         }
@@ -113,11 +119,11 @@ class OsmClient {
         // --- Fallback to cache if both attempts failed ---
         const cached = await tryReadCache();
         if (cached) {
-            console.warn(`   fetchAndCache: Using cached data for ${url}`);
+            console.warn(`OsmClient.#fetchAndCache: Using cached data for ${url}`);
             return cached;
         }
 
-        console.error(`   fetchAndCache: No usable data or cache for ${url}`);
+        console.error(`OsmClient.#fetchAndCache: No usable data or cache for ${url}`);
         return null;
     }
 
@@ -238,14 +244,14 @@ class OsmClient {
 
         if (!fs.existsSync(apiStateFile)) {
             // Assume we can at least try if we have no data suggesting otherwise
-            console.log("No API state file found, assuming we can try");
+            console.log("No API state file found");
             return true;
         }
 
         const previousApiStateFileContent = await fs.promises.readFile(apiStateFile, 'utf-8');
 
         if (!previousApiStateFileContent) {
-            console.error("API state file is empty, assuming we can try");  
+            console.error("API state file is empty");  
             return true;
         }
 
