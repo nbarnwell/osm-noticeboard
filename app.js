@@ -150,6 +150,12 @@ const badgeNamePrefix = (sectionName, badgeType) => {
     }
 };
 
+app.get('/api/startup', asyncHandler(async (req, res) => {
+    const queries = new Queries();
+    const terms = await queries.getStartup();
+    res.json(terms);
+}));
+
 app.get('/api/termsRaw', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getTermsRaw();

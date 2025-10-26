@@ -40,6 +40,20 @@ async function callOsm(token, url) {
 /**
  * Load evenings data
  */
+async function loadStartup() {
+    const url = 'http://localhost:3000/api/startup';
+
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const json = await response.json();
+    displayJson(json);
+}
+
+/**
+ * Load evenings data
+ */
 async function loadEvenings() {
     const url = 'http://localhost:3000/api/evenings?count=2';
 

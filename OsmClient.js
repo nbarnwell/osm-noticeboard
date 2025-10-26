@@ -20,6 +20,10 @@ class OsmClient {
         fs.promises.mkdir(this.CACHE_DIR, { recursive: true }).catch(console.error);
     }
 
+    async getStartup() {
+        return await this.#fetchWithCache('ext/generic/startup/?action=getData');
+    }
+
     async getSectionConfig() {
         return await this.#fetchWithCache('api.php?action=getSectionConfig');
     }

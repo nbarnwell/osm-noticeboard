@@ -5,6 +5,11 @@ export default class Queries {
         this.osmClient = new OsmClient();
     }
 
+    getStartup = async function () {
+        const res = await this.osmClient.getStartup();
+        return res;
+    }
+
     getSections = async function () {
         const res = await this.osmClient.getSectionConfig();
         const sectionIds = Object.keys(res).map(x => parseInt(x));
