@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
 import qs from 'qs';
-import { initTokenDb, saveToken, getToken, clearToken } from './tokenDb.js';
+import { initTokenDb, saveToken, getToken, clearToken, saveApiState, getApiState } from './appState.js';
 
 const osmClientId = process.env.OSM_client_id;
 const osmClientSecret = process.env.OSM_client_secret;
@@ -230,27 +230,17 @@ class OsmClient {
             Blocked: new Boolean(response.headers.get('X-Blocked'))
         };
 
-        const apiStateFile = path.join(this.CACHE_DIR, 'apiState.json');
-        await fs.promises.writeFile(apiStateFile, JSON.stringify(osmApiState, null, 2), 'utf-8');
+        await saveApiState(osmApiState);
     }
 
     async #apiStateIsGood() {
-        const apiStateFile = path.join(this.CACHE_DIR, 'apiState.json');
+        const previousApiState = await getApiState();
 
-        if (!fs.existsSync(apiStateFile)) {
+        if (!previousApiState) {
             // Assume we can at least try if we have no data suggesting otherwise
-            console.log("No API state file found");
+            console.log("No API state found");
             return true;
         }
-
-        const previousApiStateFileContent = await fs.promises.readFile(apiStateFile, 'utf-8');
-
-        if (!previousApiStateFileContent) {
-            console.error("API state file is empty");  
-            return true;
-        }
-
-        const previousApiState = JSON.parse(previousApiStateFileContent, (key, value) => key === 'LastCallTime' ? new Date(value) : value);
 
         if (previousApiState.Blocked) {
             console.error("Client is blocked");
@@ -258,7 +248,7 @@ class OsmClient {
         }
 
         const date = new Date();
-        if (previousApiState.tooManyRequests && date < previousApiState.RetryAfterTime) {
+        if (previousApiState.TooManyRequests && date < previousApiState.RetryAfterTime) {
             console.error("Can't try again until ", previousApiState.RetryAfterTime)
             return false;
         }
