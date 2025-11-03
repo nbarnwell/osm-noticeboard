@@ -1,6 +1,9 @@
 // Simple atomic token storage using sqlite3
 // Used by OsmClient.js for token storage
 
+import path from 'path';
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
 
 const DB_FILE = path.join(process.cwd(), 'cache', 'token.db');
 
