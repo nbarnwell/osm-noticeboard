@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
 import qs from 'qs';
+import { initTokenDb, saveToken, getToken, clearToken } from './tokenDb.js';
 
 const osmClientId = process.env.OSM_client_id;
 const osmClientSecret = process.env.OSM_client_secret;
@@ -16,8 +17,10 @@ class OsmClient {
         this.CACHE_DIR = path.join(__dirname, 'cache');
         this.cacheDuration = 15 * 60 * 1000;
 
-        // Ensure cache directory exists
-        fs.promises.mkdir(this.CACHE_DIR, { recursive: true }).catch(console.error);
+    // Ensure cache directory exists
+    fs.promises.mkdir(this.CACHE_DIR, { recursive: true }).catch(console.error);
+    // Ensure token DB exists
+    initTokenDb().catch(console.error);
     }
 
     async getStartup() {
@@ -201,47 +204,15 @@ class OsmClient {
     }
 
     async #saveTokenData(token) {
-        const tokenData = { token: token };
-        const tokenFile = path.join(this.CACHE_DIR, 'token.json');
-        const tempFile = tokenFile + '.tmp';
-        
-        // Write to temporary file first
-        await fs.promises.writeFile(tempFile, JSON.stringify(tokenData, null, 2), 'utf-8');
-        
-        // On Windows, rename fails if target exists, so delete first
-        if (fs.existsSync(tokenFile)) {
-            await fs.promises.unlink(tokenFile);
-        }
-        await fs.promises.rename(tempFile, tokenFile);
+        await saveToken(token);
     }
 
     async #getTokenData() {
-        const tokenFile = path.join(this.CACHE_DIR, 'token.json');
-        if (!fs.existsSync(tokenFile)) {
-            return null;
-        }
-        try {
-            const content = await fs.promises.readFile(tokenFile, 'utf-8');
-            const tokenData = JSON.parse(content);
-            return tokenData;
-        } catch (error) {
-            console.error(`Error parsing token.json: ${error.message}. Deleting corrupted file.`);
-            // Delete corrupted token file and return null to force re-authentication
-            try {
-                fs.unlinkSync(tokenFile);
-            } catch (deleteError) {
-                console.error(`Error deleting corrupted token.json: ${deleteError.message}`);
-            }
-            return null;
-        }
+        return await getToken();
     }
 
     async #clearTokenData() {
-        const tokenFile = path.join(this.CACHE_DIR, 'token.json');
-        if (!fs.existsSync(tokenFile)) {
-            return;
-        }
-        fs.unlinkSync(tokenFile);
+        await clearToken();
     }
 
     async #saveApiState(response) {
