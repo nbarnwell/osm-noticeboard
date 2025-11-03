@@ -15,6 +15,10 @@ async function getDb() {
 let _initPromise = (async () => {
     const db = await getDb();
     try {
+        // Enable WAL mode for better concurrent access
+        await db.run('PRAGMA journal_mode = WAL');
+        await db.run('PRAGMA busy_timeout = 5000'); // Wait up to 5 seconds for locks
+        
         await db.run(`CREATE TABLE IF NOT EXISTS token (
             id INTEGER PRIMARY KEY CHECK (id = 0),
             token TEXT NOT NULL
