@@ -29,8 +29,20 @@ let _initPromise = (async () => {
             RateLimitLimit INTEGER,
             RateLimitRemaining INTEGER,
             RateLimitReset INTEGER,
-            Blocked INTEGER NOT NULL
+            Blocked INTEGER NOT NULL,
+            LastResponseBody TEXT
         )`);
+        
+        // Migration: Add LastResponseBody column if it doesn't exist
+        try {
+            await db.run(`ALTER TABLE api_state ADD COLUMN LastResponseBody TEXT`);
+            console.log('Migration: Added LastResponseBody column to api_state table');
+        } catch (e) {
+            // Column already exists, ignore error
+            if (!e.message.includes('duplicate column name')) {
+                console.error('Migration error:', e.message);
+            }
+        }
     } finally {
         await db.close();
     }
@@ -78,8 +90,8 @@ export async function saveApiState(apiState) {
         await db.run(
             `INSERT OR REPLACE INTO api_state 
             (id, LastCallTime, TooManyRequests, RetryAfterSeconds, RetryAfterTime, 
-             RateLimitLimit, RateLimitRemaining, RateLimitReset, Blocked) 
-            VALUES (0, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             RateLimitLimit, RateLimitRemaining, RateLimitReset, Blocked, LastResponseBody) 
+            VALUES (0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             apiState.LastCallTime.toISOString(),
             apiState.TooManyRequests ? 1 : 0,
             apiState.RetryAfterSeconds,
@@ -87,7 +99,8 @@ export async function saveApiState(apiState) {
             apiState.RateLimitLimit,
             apiState.RateLimitRemaining,
             apiState.RateLimitReset,
-            apiState.Blocked ? 1 : 0
+            apiState.Blocked ? 1 : 0,
+            apiState.LastResponseBody
         );
     } finally {
         await db.close();
@@ -110,8 +123,30 @@ export async function getApiState() {
             RateLimitLimit: row.RateLimitLimit,
             RateLimitRemaining: row.RateLimitRemaining,
             RateLimitReset: row.RateLimitReset,
-            Blocked: row.Blocked === 1
+            Blocked: row.Blocked === 1,
+            LastResponseBody: row.LastResponseBody
         };
+    } finally {
+        await db.close();
+    }
+}
+
+export async function clearApiState() {
+    await _initPromise;
+    const db = await getDb();
+    try {
+        await db.run('DELETE FROM api_state WHERE id = 0');
+    } finally {
+        await db.close();
+    }
+}
+
+export async function clearAllState() {
+    await _initPromise;
+    const db = await getDb();
+    try {
+        await db.run('DELETE FROM token WHERE id = 0');
+        await db.run('DELETE FROM api_state WHERE id = 0');
     } finally {
         await db.close();
     }

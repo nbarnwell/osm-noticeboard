@@ -11,6 +11,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class OsmClient {
+    // Static promise to ensure only one token acquisition happens at a time
+    static #tokenAcquisitionPromise = null;
+    
     constructor() {
         this.osmRoot = 'https://www.onlinescoutmanager.co.uk'
 
@@ -165,42 +168,68 @@ class OsmClient {
     }
 
     async #getOsmToken() {
+        // First, try to get existing token
         const tokenData = await this.#getTokenData();
         if (tokenData !== null) {
             return tokenData.token;
         }
 
-        if (!(await this.#apiStateIsGood())) {
-            throw new Error("API state indicates failure")
+        // If no token exists, use a lock to ensure only one acquisition happens at a time
+        if (OsmClient.#tokenAcquisitionPromise) {
+            console.log("Token acquisition already in progress, waiting...");
+            await OsmClient.#tokenAcquisitionPromise;
+            
+            // After waiting, try to get the token again (another request may have acquired it)
+            const newTokenData = await this.#getTokenData();
+            if (newTokenData !== null) {
+                console.log("Using token acquired by another request");
+                return newTokenData.token;
+            }
         }
 
-        const body = qs.stringify({
-            grant_type: 'client_credentials',
-            client_id: osmClientId,
-            client_secret: osmClientSecret,
-            scope: 'section:programme:read section:event:read'
-        });
+        // Create a new acquisition promise that others can wait on
+        OsmClient.#tokenAcquisitionPromise = (async () => {
+            try {
+                console.log("Acquiring new token from OSM...");
+                
+                if (!(await this.#apiStateIsGood())) {
+                    throw new Error("API state indicates failure")
+                }
 
-        const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: body,
-        });
+                const body = qs.stringify({
+                    grant_type: 'client_credentials',
+                    client_id: osmClientId,
+                    client_secret: osmClientSecret,
+                    scope: 'section:programme:read section:event:read'
+                });
 
-        await this.#saveApiState(response);
+                const response = await fetch('https://www.onlinescoutmanager.co.uk/oauth/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body,
+                });
 
-        if (!response.ok) {
-            console.error("Unable to authenticate with OSM: ", response.statusText);
-            throw new Error("Unable to Authenticate with OSM");
-        }
+                await this.#saveApiState(response);
 
-        const data = await response.json();
-        
-        await this.#saveTokenData(data.access_token);
+                if (!response.ok) {
+                    console.error("Unable to authenticate with OSM: ", response.statusText);
+                    throw new Error("Unable to Authenticate with OSM");
+                }
 
-        return data.access_token;
+                const data = await response.json();
+                
+                await this.#saveTokenData(data.access_token);
+
+                return data.access_token;
+            } finally {
+                // Clear the promise after completion (success or failure)
+                OsmClient.#tokenAcquisitionPromise = null;
+            }
+        })();
+
+        return await OsmClient.#tokenAcquisitionPromise;
     }
 
     async #saveTokenData(token) {
@@ -215,10 +244,27 @@ class OsmClient {
         await clearToken();
     }
 
-    async #saveApiState(response) {
+    async #saveApiState(response, responseBody = null) {
         const tooManyRequests = response.status === 429;
         const retryAfterSeconds = tooManyRequests ? parseInt(response.headers.get('Retry-After')) : 0;
         const date = new Date();
+        const blockedHeader = response.headers.get('X-Blocked');
+        
+        // If no body provided, try to clone and read it (for error responses)
+        let bodyText = responseBody;
+        if (!bodyText && !response.ok) {
+            try {
+                const clonedResponse = response.clone();
+                bodyText = await clonedResponse.text();
+                // Limit body size to prevent huge storage
+                if (bodyText.length > 5000) {
+                    bodyText = bodyText.substring(0, 5000) + '... (truncated)';
+                }
+            } catch (e) {
+                bodyText = '(unable to capture response body)';
+            }
+        }
+        
         const osmApiState = {
             LastCallTime: date,
             TooManyRequests: tooManyRequests,
@@ -227,7 +273,8 @@ class OsmClient {
             RateLimitLimit: parseInt(response.headers.get('X-RateLimit-Limit')),
             RateLimitRemaining: parseInt(response.headers.get('X-RateLimit-Remaining')),
             RateLimitReset: parseInt(response.headers.get('X-RateLimit-Reset')),
-            Blocked: new Boolean(response.headers.get('X-Blocked'))
+            Blocked: blockedHeader === 'true' || blockedHeader === '1',
+            LastResponseBody: bodyText || null
         };
 
         await saveApiState(osmApiState);

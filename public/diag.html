@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostics - OSM Noticeboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .status-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+        .value {
+            color: #333;
+        }
+        .value.good {
+            color: #28a745;
+        }
+        .value.warning {
+            color: #ffc107;
+        }
+        .value.bad {
+            color: #dc3545;
+        }
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>OSM API Diagnostics</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <button onclick="loadDiagnostics()">Refresh</button>
+        <button onclick="resetApiState()" style="background: #ffc107; margin-left: 10px;">Reset API State</button>
+        <button onclick="deleteToken()" style="background: #dc3545; margin-left: 10px;">Delete OSM Token</button>
+        <button onclick="clearCache()" style="background: #6c757d; margin-left: 10px;">Clear Cache</button>
+    </div>
+    
+    <div id="content">
+        <div class="loading">Loading diagnostics...</div>
+    </div>
+
+    <script>
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function loadDiagnostics() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading diagnostics...</div>';
+            
+            try {
+                const response = await fetch('/api/diagnostics');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayDiagnostics(data);
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error loading diagnostics: ${error.message}</div>`;
+            }
+        }
+        
+        function displayDiagnostics(data) {
+            const content = document.getElementById('content');
+            
+            let html = '<div class="status-box"><h2>Authentication Token</h2>';
+            
+            if (data.token) {
+                html += `
+                    <div class="status-item">
+                        <span class="label">Token (first 5 chars):</span>
+                        <span class="value good">${data.token}</span>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="status-item">
+                        <span class="label">Token:</span>
+                        <span class="value" style="color: #999;">Not acquired yet</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="value" style="font-size: 0.9em; color: #666; font-style: italic;">
+                            Note: Tokens are acquired on-demand when making API calls. If all data is cached, no token is needed.
+                        </span>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            html += '<div class="status-box"><h2>API State</h2>';
+            
+            if (data.apiState) {
+                const state = data.apiState;
+                const rateLimitClass = state.RateLimitRemaining < 10 ? 'bad' : 
+                                       state.RateLimitRemaining < 50 ? 'warning' : 'good';
+                const blockedClass = state.Blocked ? 'bad' : 'good';
+                const tooManyClass = state.TooManyRequests ? 'bad' : 'good';
+                
+                html += `
+                    <div class="status-item">
+                        <span class="label">Last Call Time:</span>
+                        <span class="value">${new Date(state.LastCallTime).toLocaleString()}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Blocked:</span>
+                        <span class="value ${blockedClass}">${state.Blocked ? 'YES' : 'No'}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Too Many Requests:</span>
+                        <span class="value ${tooManyClass}">${state.TooManyRequests ? 'YES' : 'No'}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Retry After (seconds):</span>
+                        <span class="value">${state.RetryAfterSeconds}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Retry After Time:</span>
+                        <span class="value">${new Date(state.RetryAfterTime).toLocaleString()}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Rate Limit:</span>
+                        <span class="value">${state.RateLimitLimit}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Rate Limit Remaining:</span>
+                        <span class="value ${rateLimitClass}">${state.RateLimitRemaining}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Rate Limit Reset (seconds):</span>
+                        <span class="value">${state.RateLimitReset}</span>
+                    </div>
+                    <div class="status-item" style="flex-direction: column; align-items: flex-start;">
+                        <span class="label" style="margin-bottom: 10px;">Last Response Body:</span>
+                        ${state.LastResponseBody ? 
+                            `<pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; max-width: 100%; margin: 0;">${escapeHtml(state.LastResponseBody)}</pre>` :
+                            `<span class="value" style="font-style: italic; color: #999;">None (only captured for error responses)</span>`
+                        }
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="status-item">
+                        <span class="label">API State:</span>
+                        <span class="value">Not available</span>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            content.innerHTML = html;
+        }
+        
+        async function resetApiState() {
+            if (!confirm('This will delete the API state data. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/diagnostics/reset-api-state', { method: 'POST' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                alert('API state reset successfully.');
+                loadDiagnostics();
+            } catch (error) {
+                alert(`Error resetting API state: ${error.message}`);
+            }
+        }
+        
+        async function deleteToken() {
+            if (!confirm('This will delete the OSM authentication token. The app will re-authenticate on the next API call. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/diagnostics/delete-token', { method: 'POST' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                alert('Token deleted successfully.');
+                loadDiagnostics();
+            } catch (error) {
+                alert(`Error deleting token: ${error.message}`);
+            }
+        }
+        
+        async function clearCache() {
+            if (!confirm('This will delete all cached files. The app will re-fetch data from OSM on the next request. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/diagnostics/clear-cache', { method: 'POST' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                alert(`Cache cleared successfully. ${result.filesDeleted} file(s) deleted.`);
+                loadDiagnostics();
+            } catch (error) {
+                alert(`Error clearing cache: ${error.message}`);
+            }
+        }
+        
+        // Load diagnostics on page load
+        loadDiagnostics();
+    </script>
+</body>
+</html>

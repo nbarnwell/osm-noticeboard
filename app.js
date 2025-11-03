@@ -1,9 +1,11 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import Queries from './Queries.js';
+import { getToken, getApiState, clearToken, clearApiState, clearAllState } from './appState.js';
 
 const app = express();
 const port = 3000;
@@ -260,6 +262,51 @@ app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req
     }).slice(0, 5);
 
     return res.json(upcomingEvents);
+}));
+
+app.get('/api/diagnostics', asyncHandler(async (req, res) => {
+    const tokenData = await getToken();
+    const apiState = await getApiState();
+    
+    console.log('Diagnostics check - tokenData:', tokenData ? `${tokenData.token.substring(0, 10)}...` : 'null');
+    
+    const diagnostics = {
+        token: tokenData ? tokenData.token.substring(0, 5) : null,
+        apiState: apiState
+    };
+    
+    res.status(200).json(diagnostics);
+}));
+
+app.post('/api/diagnostics/reset-api-state', asyncHandler(async (req, res) => {
+    await clearApiState();
+    res.status(200).json({ message: 'API state reset successfully' });
+}));
+
+app.post('/api/diagnostics/delete-token', asyncHandler(async (req, res) => {
+    await clearToken();
+    res.status(200).json({ message: 'Token deleted successfully' });
+}));
+
+app.post('/api/diagnostics/clear-cache', asyncHandler(async (req, res) => {
+    const cacheDir = path.join(__dirname, 'cache');
+    let filesDeleted = 0;
+    
+    if (fs.existsSync(cacheDir)) {
+        const files = fs.readdirSync(cacheDir);
+        for (const file of files) {
+            const filePath = path.join(cacheDir, file);
+            const stat = fs.statSync(filePath);
+            
+            // Only delete .json files, not the database files
+            if (stat.isFile() && file.endsWith('.json')) {
+                fs.unlinkSync(filePath);
+                filesDeleted++;
+            }
+        }
+    }
+    
+    res.status(200).json({ message: 'Cache cleared successfully', filesDeleted });
 }));
 
 app.delete('/api/cache', asyncHandler(async (req, res) => {
