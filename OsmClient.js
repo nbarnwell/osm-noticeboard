@@ -203,7 +203,16 @@ class OsmClient {
     async #saveTokenData(token) {
         const tokenData = { token: token };
         const tokenFile = path.join(this.CACHE_DIR, 'token.json');
-        await fs.promises.writeFile(tokenFile, JSON.stringify(tokenData, null, 2), 'utf-8');
+        const tempFile = tokenFile + '.tmp';
+        
+        // Write to temporary file first
+        await fs.promises.writeFile(tempFile, JSON.stringify(tokenData, null, 2), 'utf-8');
+        
+        // On Windows, rename fails if target exists, so delete first
+        if (fs.existsSync(tokenFile)) {
+            await fs.promises.unlink(tokenFile);
+        }
+        await fs.promises.rename(tempFile, tokenFile);
     }
 
     async #getTokenData() {
@@ -211,9 +220,20 @@ class OsmClient {
         if (!fs.existsSync(tokenFile)) {
             return null;
         }
-        const content = await fs.promises.readFile(tokenFile, 'utf-8');
-        const tokenData = JSON.parse(content);
-        return tokenData;
+        try {
+            const content = await fs.promises.readFile(tokenFile, 'utf-8');
+            const tokenData = JSON.parse(content);
+            return tokenData;
+        } catch (error) {
+            console.error(`Error parsing token.json: ${error.message}. Deleting corrupted file.`);
+            // Delete corrupted token file and return null to force re-authentication
+            try {
+                fs.unlinkSync(tokenFile);
+            } catch (deleteError) {
+                console.error(`Error deleting corrupted token.json: ${deleteError.message}`);
+            }
+            return null;
+        }
     }
 
     async #clearTokenData() {
