@@ -119,15 +119,15 @@ async function fetchSessions(now) {
  * Load session data and populate the view model
  */
 async function loadSessionData(viewModel, currentSession, nextSession) {
-  // Clear existing session data
-  viewModel.setCurrentSession(null);
-  viewModel.setNextSession(null);
-  viewModel.setCurrentSection(null);
-  viewModel.setUpcomingEvents(null);
+  // Build new view models first (to avoid flickering)
+  let currentSessionViewModel = null;
+  let nextSessionViewModel = null;
+  let sectionViewModel = null;
+  let eventlist = null;
   
   // Build current session if exists
   if (currentSession != null) {
-    const currentSessionViewModel = 
+    currentSessionViewModel = 
       new SessionViewModel(
         currentSession.id,
         currentSession.title,
@@ -139,12 +139,11 @@ async function loadSessionData(viewModel, currentSession, nextSession) {
     for (const badge of currentSession.badgeLinks) {
       currentSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName, getBadgeFilename(badge)));
     }
-    viewModel.setCurrentSession(currentSessionViewModel);
   }
   
   // Build next session if exists
   if (nextSession != null) {
-    const nextSessionViewModel = 
+    nextSessionViewModel = 
       new SessionViewModel(
         nextSession.id,
         nextSession.title,
@@ -156,26 +155,29 @@ async function loadSessionData(viewModel, currentSession, nextSession) {
     for (const badge of nextSession.badgeLinks) {
       nextSessionViewModel.addBadge(new BadgeViewModel(badge.sectionLongName, badge.badgetypeLongName, badge.badgeLongName, getBadgeFilename(badge)));
     }
-    viewModel.setNextSession(nextSessionViewModel);
   }
   
   // Load section and events
   if (currentSession != null || nextSession != null) {
     const section = await get(`api/sections/${currentSession != null ? currentSession.sectionId : nextSession.sectionId}`);
-    const sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
-    viewModel.setCurrentSection(sectionViewModel);
+    sectionViewModel = new SectionViewModel(toTitleCase(section.groupName), toTitleCase(section.sectionName), toTitleCase(section.sectionType), logoUrl(section.sectionType));
 
     if (section != null) {
       const termId = currentSession != null ? currentSession.termId : nextSession.termId;
       const events = await get(`api/sections/${section.id}/terms/${termId}/events`);
-      const eventlist = new EventListViewModel();
+      eventlist = new EventListViewModel();
 
       for (const evt of events) {
         eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
       }
-      viewModel.setUpcomingEvents(eventlist);
     }
   }
+  
+  // Now update the view model all at once (reduces flickering)
+  viewModel.setCurrentSession(currentSessionViewModel);
+  viewModel.setNextSession(nextSessionViewModel);
+  viewModel.setCurrentSection(sectionViewModel);
+  viewModel.setUpcomingEvents(eventlist);
 }
 
 document.addEventListener("DOMContentLoaded", async function () {

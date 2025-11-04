@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import Queries from './Queries.js';
 import { getToken, getApiState, clearToken, clearApiState, clearAllState } from './appState.js';
+import { start } from 'repl';
 
 const app = express();
 const port = 3000;
@@ -190,7 +191,7 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
         now = new Date(parsed);
     }
 
-    console.log(`Fetching evenings for current date: ${now.toISOString()}`);
+    console.log(`Fetching evenings for current term: ${now.toISOString()}`);
 
     const evenings = (
         await Promise.all(
@@ -234,6 +235,10 @@ app.get('/api/sections/:id', asyncHandler(async (req, res, next) => {
     const section = sectionMap.get(id);
 
     if (section) {
+        const startupInfo = await queries.getStartup();
+        const sectionAdditionalInfo = startupInfo.globals.roles.find(r => r.sectionid == id);
+        section.groupName = sectionAdditionalInfo?.groupname || section.groupname;
+        section.sectionName = sectionAdditionalInfo?.sectionname || section.sectionname;
         return res.json(section);
     } else {
         return next({ status: 404, message: `Section ${id} not found` }); // Pass the error to the next middleware
