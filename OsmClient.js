@@ -5,8 +5,8 @@ import fetch from 'node-fetch';
 import qs from 'qs';
 import { initTokenDb, saveToken, getToken, clearToken, saveApiState, getApiState } from './appState.js';
 
-const osmClientId = 'hLfPd67JjUKXz4P6oHRtNTd1sY6OLK9t'; // process.env.OSM_client_id;
-const osmClientSecret = 'NvaCxhjuAl33vs4ACfq7Uxu8IuoNBewazjQczHJuwsYO3Us2tjj5CkPgUsosY8lV'; // process.env.OSM_client_secret;
+const osmClientId = process.env.OSM_client_id;
+const osmClientSecret = process.env.OSM_client_secret;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
