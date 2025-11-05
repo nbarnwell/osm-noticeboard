@@ -233,7 +233,11 @@ async function reloadData(viewModel) {
   try {
     console.log('[Noticeboard] Reloading data...');
     
-    const now = new Date();
+    const urlParams = new URLSearchParams(window.location.search);
+    const nowParam = urlParams.get('now');
+
+    // Use the query parameter if present, otherwise use the current date
+    const now = nowParam ? new Date(nowParam) : new Date();
     const { currentSession, nextSession } = await fetchSessions(now);
     
     // Load the session data into the view model
