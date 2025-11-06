@@ -18,13 +18,34 @@
     <title>Scouts 1st Worcester Noticeboard</title>
 
     <style>
+        :root {
+            /* Overscan compensation margins - adjust these values as needed */
+            --overscan-top: 200px;
+            --overscan-right: 20px;
+            --overscan-bottom: 20px;
+            --overscan-left: 20px;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: black; /* Color shown in overscan areas */
+        }
+
         body {
             font-family: 'Nunito Sans', sans-serif !important;
             background-image: url('images/backgrounds/background.jpg');
             /* Replace with the actual image path */
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
+            background-attachment: scroll;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: var(--overscan-top) var(--overscan-right) var(--overscan-bottom) var(--overscan-left);
+            box-sizing: border-box;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .card {
@@ -37,9 +58,9 @@
             color: white;
             padding-right: 1rem;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: var(--overscan-top);
+            left: var(--overscan-left);
+            right: var(--overscan-right);
             z-index: 1030;
             /* Ensure it stays above other content */
         }
@@ -51,8 +72,8 @@
 
         .timestamp-label {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
+            bottom: calc(var(--overscan-bottom) + 10px);
+            right: calc(var(--overscan-right) + 10px);
             background-color: white;
             color: #333;
             padding: 4px 8px;
@@ -65,8 +86,8 @@
 
         .clock-label {
             position: fixed;
-            bottom: 10px;
-            left: 10px;
+            bottom: calc(var(--overscan-bottom) + 10px);
+            left: calc(var(--overscan-left) + 10px);
             background-color: white;
             color: #333;
             padding: 4px 8px;
@@ -107,10 +128,120 @@
             word-break: break-word;
             text-wrap: wrap;
         }
+
+        .settings-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 2000;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .settings-toggle:hover {
+            opacity: 1;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background-color: white;
+            border: 2px solid #00A794;
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .settings-panel.show {
+            display: block;
+        }
+
+        .settings-panel label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .settings-panel input {
+            width: 80px;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        .settings-panel button {
+            margin-right: 10px;
+        }
     </style>
+    <script>
+        // Load overscan settings from localStorage on page load
+        (function() {
+            const settings = {
+                top: localStorage.getItem('overscan-top') || '20',
+                right: localStorage.getItem('overscan-right') || '20',
+                bottom: localStorage.getItem('overscan-bottom') || '20',
+                left: localStorage.getItem('overscan-left') || '20'
+            };
+            
+            document.documentElement.style.setProperty('--overscan-top', settings.top + 'px');
+            document.documentElement.style.setProperty('--overscan-right', settings.right + 'px');
+            document.documentElement.style.setProperty('--overscan-bottom', settings.bottom + 'px');
+            document.documentElement.style.setProperty('--overscan-left', settings.left + 'px');
+        })();
+
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('show');
+        }
+
+        function saveSettings() {
+            const top = document.getElementById('overscanTop').value;
+            const right = document.getElementById('overscanRight').value;
+            const bottom = document.getElementById('overscanBottom').value;
+            const left = document.getElementById('overscanLeft').value;
+
+            localStorage.setItem('overscan-top', top);
+            localStorage.setItem('overscan-right', right);
+            localStorage.setItem('overscan-bottom', bottom);
+            localStorage.setItem('overscan-left', left);
+
+            document.documentElement.style.setProperty('--overscan-top', top + 'px');
+            document.documentElement.style.setProperty('--overscan-right', right + 'px');
+            document.documentElement.style.setProperty('--overscan-bottom', bottom + 'px');
+            document.documentElement.style.setProperty('--overscan-left', left + 'px');
+
+            toggleSettings();
+        }
+
+        function loadSettingsToForm() {
+            document.getElementById('overscanTop').value = localStorage.getItem('overscan-top') || '20';
+            document.getElementById('overscanRight').value = localStorage.getItem('overscan-right') || '20';
+            document.getElementById('overscanBottom').value = localStorage.getItem('overscan-bottom') || '20';
+            document.getElementById('overscanLeft').value = localStorage.getItem('overscan-left') || '20';
+        }
+    </script>
 </head>
 
-<body>
+<body onload="loadSettingsToForm()">
+    <button class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</button>
+    
+    <div id="settingsPanel" class="settings-panel">
+        <h4>Overscan Compensation (px)</h4>
+        <label>Top: <input type="number" id="overscanTop" min="0" max="200"></label>
+        <label>Right: <input type="number" id="overscanRight" min="0" max="200"></label>
+        <label>Bottom: <input type="number" id="overscanBottom" min="0" max="200"></label>
+        <label>Left: <input type="number" id="overscanLeft" min="0" max="200"></label>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleSettings()">Cancel</button>
+    </div>
+
     <div class="header-section d-flex justify-content-between align-items-center" data-bind="with: currentSection">
         <!--<h1 class="display-4" data-bind="text: sectionType"></h1>-->
         <img class="sectionLogo" data-bind="attr: { src: sectionLogo, alt: sectionType }">

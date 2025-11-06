@@ -71,6 +71,23 @@
         button:hover {
             background: #0056b3;
         }
+        .overscan-settings {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .overscan-settings label {
+            display: inline-block;
+            width: 100px;
+            margin-right: 10px;
+        }
+        .overscan-settings input {
+            width: 100px;
+            padding: 5px;
+            margin-right: 20px;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +104,49 @@
         <div class="loading">Loading diagnostics...</div>
     </div>
 
+    <div class="overscan-settings">
+        <h2>Overscan Compensation Settings</h2>
+        <div style="margin-bottom: 10px;">
+            <label>Top (px):</label>
+            <input type="number" id="overscanTop" min="0" max="200">
+            <label>Right (px):</label>
+            <input type="number" id="overscanRight" min="0" max="200">
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label>Bottom (px):</label>
+            <input type="number" id="overscanBottom" min="0" max="200">
+            <label>Left (px):</label>
+            <input type="number" id="overscanLeft" min="0" max="200">
+        </div>
+        <button onclick="saveOverscanSettings()">Save Overscan Settings</button>
+        <button onclick="loadOverscanSettings()" style="background: #6c757d; margin-left: 10px;">Load Current Settings</button>
+    </div>
+
     <script>
+        function loadOverscanSettings() {
+            document.getElementById('overscanTop').value = localStorage.getItem('overscan-top') || '20';
+            document.getElementById('overscanRight').value = localStorage.getItem('overscan-right') || '20';
+            document.getElementById('overscanBottom').value = localStorage.getItem('overscan-bottom') || '20';
+            document.getElementById('overscanLeft').value = localStorage.getItem('overscan-left') || '20';
+        }
+
+        function saveOverscanSettings() {
+            const top = document.getElementById('overscanTop').value;
+            const right = document.getElementById('overscanRight').value;
+            const bottom = document.getElementById('overscanBottom').value;
+            const left = document.getElementById('overscanLeft').value;
+
+            localStorage.setItem('overscan-top', top);
+            localStorage.setItem('overscan-right', right);
+            localStorage.setItem('overscan-bottom', bottom);
+            localStorage.setItem('overscan-left', left);
+
+            alert('Overscan settings saved! They will apply on the main page.');
+        }
+
+        // Load settings on page load
+        window.addEventListener('load', loadOverscanSettings);
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
