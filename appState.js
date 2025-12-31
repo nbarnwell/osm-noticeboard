@@ -4,8 +4,17 @@
 import path from 'path';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
+import fs from 'fs';
 
 const DB_FILE = path.join(process.cwd(), 'cache', 'token.db');
+
+// Ensure parent directory exists to avoid SQLITE_CANTOPEN
+try {
+    fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+} catch (e) {
+    console.error('Failed to create cache directory for DB file:', e);
+    throw e;
+}
 
 async function getDb() {
     return open({ filename: DB_FILE, driver: sqlite3.Database });
