@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import Queries from './Queries.js';
 import { getToken, getApiState, clearToken, clearApiState, clearAllState } from './appState.js';
+import { DateTime } from 'luxon';
 import { start } from 'repl';
 
 const app = express();
@@ -25,13 +26,6 @@ app.use((err, req, res, next) => {
 
 const asyncHandler = fn => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
-};
-
-/// Used when a date is in DD/MM/YYYY format, which JavaScript's Date doesn't support
-const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split("/").map(Number);
-    const date = new Date(year, month - 1, day); // Month is 0-based in JS
-    return date;
 };
 
 app.get('/public/images/badges/:sectionName/:badgeType/:badgeName.png', (req, res) => {
@@ -179,23 +173,22 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
     let now;
 
     if (nowParam === undefined) {
-        now = new Date();
+        now = DateTime.now();
     } else {
-        const parsed = Date.parse(nowParam);
-        if (isNaN(parsed)) {
+        now = DateTime.fromISO(nowParam);
+        if (!now.isValid) {
             return res.status(400).json({
                 error: "Invalid 'now' parameter",
-                message: "The 'now' query parameter must be a valid ISO 8601 date-time string, e.g. 2025-04-03T19:15:00Z"
+                message: `The 'now' query parameter must be a valid ISO 8601 date-time string, e.g. 2025-04-03T19:15:00. Current value: '${nowParam}'`
             });
         }
-        now = new Date(parsed);
     }
 
-    console.log(`Fetching evenings for current term: ${now.toISOString()}`);
+    console.log(`Fetching evenings for current term: ${now.toISO()}`);
 
     const evenings = (
         await Promise.all(
-            terms.filter(term => new Date(term.startDate) <= now && new Date(term.endDate) >= now)
+            terms.filter(term => DateTime.fromISO(term.startDate) <= now && DateTime.fromISO(term.endDate) >= now)
                 .map(async term => {
                     const programme = await queries.getProgramme(term.sectionId, term.id);
                     
@@ -203,13 +196,15 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
                         return Promise.all(
                             programme.items.map(async (evening) => {
                                 const programmeDetail = await queries.getProgrammeDetail(term.sectionId, term.id, evening.eveningid);
+                                const startDateTime = DateTime.fromISO(evening.meetingdate + 'T' + evening.starttime);
+                                const endDateTime = DateTime.fromISO(evening.meetingdate + 'T' + evening.endtime);
                                 return {
                                     id: evening.eveningid,
                                     sectionId: evening.sectionid,
                                     termId: term.id,
                                     title: evening.title,
-                                    startDateTime: new Date(evening.meetingdate + ' ' + evening.starttime),
-                                    endDateTime: new Date(evening.meetingdate + ' ' + evening.endtime),
+                                    startDateTime: startDateTime,
+                                    endDateTime: endDateTime,
                                     notesForParents: evening.notesforparents,
                                     parentsRequired: parseInt(evening.parentsrequired),
                                     badgeLinks: programmeDetail.items[0].badgelinks
@@ -222,7 +217,7 @@ app.get('/api/evenings', asyncHandler(async (req, res) => {
         )
     ).flat(); // Flatten the resulting array of arrays
     
-    console.log(`Returning ${evenings.length} evenings for current date: ${now.toISOString()}`);
+    console.log(`Returning ${evenings.length} evenings for current date: ${now.toISO()}`);
     
     res.json(evenings);
 }));
@@ -255,14 +250,13 @@ app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req
     const term = (await queries.getTerms(sectionId)).filter(x => x.id === termId)[0];
 
     const events = (await queries.getEvents(sectionId, termId)).items;
-    events.sort((a, b) => new Date(a.date) < new Date(b.date));
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const termStartDate = new Date(term.startDate);
-    const to = new Date();
-    to.setDate(termStartDate.getDate() + 60);
+    events.sort((a, b) => DateTime.fromISO(a.date) < DateTime.fromISO(b.date));
+    const now = DateTime.now();
+    const today = DateTime.now().startOf('day');
+    const termStartDate = DateTime.fromISO(term.startDate);
+    const to = termStartDate.plus({ days: 60 });
     const upcomingEvents = events.filter(x => {
-        const eventDate = parseDate(x.date);
+        const eventDate = DateTime.fromFormat(x.date, "dd/MM/yyyy");
         return eventDate >= today && eventDate <= to;
     }).slice(0, 5);
 

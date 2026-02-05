@@ -45,8 +45,8 @@ export default class Queries {
                         id: parseInt(x.termid),
                         sectionId: parseInt(x.sectionid),
                         name: x.name,
-                        startDate: new Date(x.startdate),
-                        endDate: new Date(x.enddate)
+                        startDate: x.startdate,
+                        endDate: x.enddate
                     };
                 });
 

@@ -6,6 +6,8 @@ import SectionViewModel from './SectionViewModel.js';
 import SessionViewModel from './SessionViewModel.js';
 import toTitleCase from './Text.js';
 
+const { DateTime } = luxon;
+
 async function get(path, params = {}) {
   const url = new URL(path, window.location.origin);
 
@@ -26,40 +28,29 @@ async function get(path, params = {}) {
   return response.json();
 }
 
+// Format time in "HH:mm" 24-hour format
 function formatTime(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,  // Use 24-hour format
-  });
+  return DateTime.fromISO(dateString)
+    .toFormat('HH:mm');
 }
 
+// Format date in "DD/MM/YYYY" format
 function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  return DateTime.fromISO(dateString)
+    .toFormat('dd/MM/yyyy');
 }
 
 /**
  * Set the page load timestamp in the bottom-right corner
  */
 function setPageLoadTimestamp() {
-  const now = new Date();
+  const now = DateTime.now();
   const timestampElement = document.getElementById('page-timestamp');
+
   if (timestampElement) {
-    const formattedDateTime = now.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+    // Format as "DD/MM/YYYY HH:mm:ss"
+    const formattedDateTime = now.toFormat('dd/MM/yyyy HH:mm:ss');
+
     timestampElement.textContent = `Loaded: ${formattedDateTime}`;
     timestampElement.style.cursor = 'pointer';
     timestampElement.title = 'Click to reload data';
@@ -71,23 +62,19 @@ function setPageLoadTimestamp() {
  */
 function startClock() {
   const clockElement = document.getElementById('page-clock');
+
   function updateClock() {
-    const now = new Date();
-    const formattedDateTime = now.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+    const now = DateTime.now();
+    // Format as "DD/MM/YYYY HH:mm:ss"
+    const formattedDateTime = now.toFormat('dd/MM/yyyy HH:mm:ss');
+
     if (clockElement) {
       clockElement.textContent = formattedDateTime;
     }
   }
-  updateClock();
-  setInterval(updateClock, 1000);
+
+  updateClock();             // show immediately
+  setInterval(updateClock, 1000); // update every second
 }
 
 function logoUrl(sectionType) {
@@ -103,14 +90,14 @@ function getBadgeFilename(badge) {
  * Fetch evenings and determine current/next sessions
  */
 async function fetchSessions(now) {
-  const evenings = await get('api/evenings', { now: now.toISOString() });
-  evenings.sort((a, b) => (new Date(a.startDateTime) - new Date(b.startDateTime) || a.id - b.id));
+  const evenings = await get('api/evenings', { now: now.toISO() });
+  evenings.sort((a, b) => (DateTime.fromISO(a.startDateTime) - DateTime.fromISO(b.startDateTime) || a.id - b.id));
 
-  const currentSession = evenings.filter(x => new Date(x.startDateTime) <= now && new Date(x.endDateTime) >= now)[0];
+  const currentSession = evenings.filter(x => DateTime.fromISO(x.startDateTime) <= now && DateTime.fromISO(x.endDateTime) >= now)[0];
   const nextSession = 
     currentSession != null 
-    ? evenings.filter(x => x.sectionId === currentSession.sectionId && x.id !== currentSession.id && new Date(x.startDateTime) >= new Date(currentSession.startDateTime))[0]
-    : evenings.filter(x => new Date(x.startDateTime) > new Date(now))[0];
+    ? evenings.filter(x => x.sectionId === currentSession.sectionId && x.id !== currentSession.id && DateTime.fromISO(x.startDateTime) >= DateTime.fromISO(currentSession.startDateTime))[0]
+    : evenings.filter(x => DateTime.fromISO(x.startDateTime) > now)[0];
 
   return { currentSession, nextSession };
 }
@@ -186,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const nowParam = urlParams.get('now');
 
   // Use the query parameter if present, otherwise use the current date
-  const now = nowParam ? new Date(nowParam) : new Date();
+  const now = nowParam ? DateTime.fromISO(nowParam) : DateTime.now();
 
   // Fetch sessions
   const { currentSession, nextSession } = await fetchSessions(now);
@@ -237,7 +224,7 @@ async function reloadData(viewModel) {
     const nowParam = urlParams.get('now');
 
     // Use the query parameter if present, otherwise use the current date
-    const now = nowParam ? new Date(nowParam) : new Date();
+    const now = nowParam ? DateTime.fromISO(nowParam) : DateTime.now();
     const { currentSession, nextSession } = await fetchSessions(now);
     
     // Load the session data into the view model
@@ -259,28 +246,22 @@ function setupAutoRefresh(viewModel) {
   }
   
   function scheduleNextRefresh() {
-    const now = new Date();
+    const now = DateTime.now();
 
-    // Calculate next quarter-hour
-    let nextQuarter = Math.floor(now.getMinutes() / 15) * 15 + 15;
-    let nextRefresh = new Date(now);
-    if (nextQuarter >= 60) {
-      nextQuarter -= 60;
-      nextRefresh.setHours(now.getHours() + 1);
-    }
-    nextRefresh.setMinutes(nextQuarter, 0, 0);
+    // Calculate the next quarter-hour
+    const nextQuarterHour = now.plus({ minutes: 15 - (now.minute % 15) }).startOf('minute');
 
-    const timeUntilRefresh = nextRefresh - now;
+    const timeUntilRefresh = nextQuarterHour.toMillis() - now.toMillis();
 
     console.log(
-      `[Noticeboard] Next auto-refresh scheduled at ${nextRefresh.toLocaleTimeString()} (${Math.round(
+      `[Noticeboard] Next auto-refresh scheduled at ${nextQuarterHour.toFormat('HH:mm')} (${Math.round(
         timeUntilRefresh / 1000
       )}s)`
     );
 
     setTimeout(async () => {
       await reloadData(viewModel);
-      scheduleNextRefresh(); // Schedule the next refresh
+      scheduleNextRefresh(); // schedule the next refresh
     }, timeUntilRefresh);
   }
 
