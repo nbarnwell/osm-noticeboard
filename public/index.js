@@ -157,10 +157,12 @@ async function loadSessionData(viewModel, currentSession, nextSession) {
     if (section != null) {
       const termId = currentSession != null ? currentSession.termId : nextSession.termId;
       const events = await get(`api/sections/${section.id}/terms/${termId}/events`);
-      eventlist = new EventListViewModel();
-
-      for (const evt of events) {
-        eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
+      
+      if (events && events.length > 0) {
+        eventlist = new EventListViewModel();
+        for (const evt of events) {
+          eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
+        }
       }
     }
   }

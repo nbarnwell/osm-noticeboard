@@ -253,8 +253,9 @@
 
     <div class="container-fluid">
         <div class="row g-4">
+            <!-- ko if: currentSession -->
             <!-- Now Section -->
-            <div class="col-md-6 col-lg-4" data-bind="if: currentSession">
+            <div class="col-sm-6 col-lg-4 flex-grow-1">
                 <div data-bind="with: currentSession">
                     <div class="card shadow-sm">
                         <div class="card-body">
@@ -292,9 +293,11 @@
                     </div>
                 </div>
             </div>
+            <!-- /ko -->
 
+            <!-- ko if: nextSession -->
             <!-- Next Section -->
-            <div class="col-md-6 col-lg-4" data-bind="if: nextSession">
+            <div class="col-sm-6 col-lg-4 flex-grow-1">
                 <div data-bind="with: nextSession">
                     <div class="card shadow-sm">
                         <div class="card-body">
@@ -332,11 +335,13 @@
                     </div>
                 </div>
             </div>
+            <!-- /ko -->
 
+            <!-- ko if: upcomingEvents -->
             <!-- Upcoming Events Section -->
-            <div class="col-12 col-lg-4" data-bind="if: upcomingEvents">
+            <div class="col-sm-6 col-lg-4 flex-grow-1">
                 <div data-bind="with: upcomingEvents">
-                    <div class="card shadow-sm" data-bind="if: eventList().length > 0">
+                    <div class="card shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title fw-bold text-primary">Upcoming Events</h5>
                             <ul class="list-group list-group-flush" data-bind="foreach: eventList">
@@ -355,6 +360,7 @@
                     </div>
                 </div>
             </div>
+            <!-- /ko -->
         </div>
     </div>
 
