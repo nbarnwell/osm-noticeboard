@@ -93,7 +93,12 @@ async function fetchSessions(now) {
   const evenings = await get('api/evenings', { now: now.toISO() });
   evenings.sort((a, b) => (DateTime.fromISO(a.startDateTime) - DateTime.fromISO(b.startDateTime) || a.id - b.id));
 
-  const currentSession = evenings.filter(x => DateTime.fromISO(x.startDateTime) <= now && DateTime.fromISO(x.endDateTime) >= now)[0];
+  let currentSession = evenings.filter(x => DateTime.fromISO(x.startDateTime) <= now && DateTime.fromISO(x.endDateTime) >= now)[0];
+
+  if (!currentSession) {
+    currentSession = evenings.filter(x => DateTime.fromISO(x.startDateTime) <= now && DateTime.fromISO(x.endDateTime).plus({ minutes: 15 }) >= now)[0];
+  }
+
   const nextSession = 
     currentSession != null 
     ? evenings.filter(x => x.sectionId === currentSession.sectionId && x.id !== currentSession.id && DateTime.fromISO(x.startDateTime) >= DateTime.fromISO(currentSession.startDateTime))[0]
