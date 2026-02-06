@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "node --test tests/*.js"
+    "test": "node --test tests/*.js",
+    "update-version": "node scripts/update-version.js"
   },
   "nodemonConfig": {
     "ignore": [

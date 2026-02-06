@@ -147,6 +147,24 @@ const badgeNamePrefix = (sectionName, badgeType) => {
     }
 };
 
+// Get version from .version file
+function getVersion() {
+    try {
+        const versionFile = path.join(__dirname, '.version');
+        if (fs.existsSync(versionFile)) {
+            return fs.readFileSync(versionFile, 'utf-8').trim();
+        }
+        return 'unknown';
+    } catch (e) {
+        console.error('Error reading version file:', e);
+        return 'unknown';
+    }
+}
+
+app.get('/api/version', (req, res) => {
+    res.json({ version: getVersion() });
+});
+
 app.get('/api/startup', asyncHandler(async (req, res) => {
     const queries = new Queries();
     const terms = await queries.getStartup();

@@ -5,3 +5,11 @@
 1. Install `node` (recommend using `nvm`)
 1. Create the `OSM_client_id` and `OSM_client_secret` environment variables with values obtained from Online Scout Manager
 1. Run `npm install`
+
+## Running the app
+
+1. Run `npm run start`
+
+## When deploying
+
+1. Run `npm run update-version`

@@ -180,6 +180,21 @@
         .settings-panel button {
             margin-right: 10px;
         }
+
+        .version-badge {
+            position: fixed;
+            bottom: calc(var(--overscan-bottom) + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            color: #333;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            font-family: 'Nunito Sans', sans-serif;
+        }
     </style>
     <script>
         // Load overscan settings from localStorage on page load
@@ -369,6 +384,22 @@
 
     <!-- Ticking clock label -->
     <div class="clock-label" id="page-clock"></div>
+
+    <!-- Version badge -->
+    <div class="version-badge" id="versionBadge"></div>
+
+    <script>
+        // Load and display version
+        fetch('/api/version')
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('versionBadge');
+                if (badge) {
+                    badge.textContent = data.version;
+                }
+            })
+            .catch(err => console.error('Failed to load version:', err));
+    </script>
 
     <script type="module" src="index.js"></script>
 
