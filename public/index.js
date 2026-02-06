@@ -91,7 +91,24 @@ function getBadgeFilename(badge) {
  */
 async function fetchSessions(now) {
   const evenings = await get('api/evenings', { now: now.toISO() });
-  evenings.sort((a, b) => (DateTime.fromISO(a.startDateTime) - DateTime.fromISO(b.startDateTime) || a.id - b.id));
+  // Treat entries that have a start or end time of 00:00 as "unspecified time" and
+  // sort them after entries with real times (people-entered). Preserve id tie-break.
+  function isMidnight(iso) {
+    const dt = DateTime.fromISO(iso);
+    return dt.isValid && dt.hour === 0 && dt.minute === 0 && dt.second === 0;
+  }
+
+  evenings.sort((a, b) => {
+    const aIsMid = isMidnight(a.startDateTime) || isMidnight(a.endDateTime);
+    const bIsMid = isMidnight(b.startDateTime) || isMidnight(b.endDateTime);
+
+    if (aIsMid !== bIsMid) return aIsMid ? 1 : -1;
+
+    const aMs = DateTime.fromISO(a.startDateTime).toMillis();
+    const bMs = DateTime.fromISO(b.startDateTime).toMillis();
+
+    return (aMs - bMs) || (a.id - b.id);
+  });
 
   let currentSession = evenings.filter(x => DateTime.fromISO(x.startDateTime) <= now && DateTime.fromISO(x.endDateTime) >= now)[0];
 
