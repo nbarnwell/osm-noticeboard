@@ -130,7 +130,7 @@ app.get('/api/sections/:id', asyncHandler(async (req, res, next) => {
 
     if (section) {
         const startupInfo = await queries.getStartup();
-        const sectionAdditionalInfo = startupInfo.globals.roles.find(r => r.sectionid == id);
+        const sectionAdditionalInfo = startupInfo.data.globals.roles.find(r => r.sectionid == id);
         section.groupName = sectionAdditionalInfo?.groupname || section.groupname;
         section.sectionName = sectionAdditionalInfo?.sectionname || section.sectionname;
         return res.json(section);

@@ -27,7 +27,7 @@ class OsmClient {
     }
 
     async getStartup() {
-        return await this.#fetchWithCache('ext/generic/startup/?action=getData');
+        return await this.#fetchWithCache('ext/generic/startup/?action=getDataPayload');
     }
 
     async getSectionConfig() {
@@ -161,7 +161,7 @@ class OsmClient {
         await this.#saveApiState(response);
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
+            throw new Error(`Error: ${response.status} ${response.statusText} for ${fullUrl}`);
         }
     
         return response;
