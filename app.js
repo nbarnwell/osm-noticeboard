@@ -153,7 +153,7 @@ app.get('/api/sections/:sectionId/terms/:termId/events', asyncHandler(async (req
     const now = DateTime.now();
     const today = DateTime.now().startOf('day');
     const termStartDate = DateTime.fromISO(term.startDate);
-    const to = termStartDate.plus({ days: 60 });
+    const to = termStartDate.plus({ months: 6 });
     const upcomingEvents = events.filter(x => {
         const eventDate = DateTime.fromFormat(x.date, "dd/MM/yyyy");
         return eventDate >= today && eventDate <= to;
