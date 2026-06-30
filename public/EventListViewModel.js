@@ -15,10 +15,12 @@ export default class EventListViewModel {
      * Add an event to the list
      * @param {string} title - Event title
      * @param {string} date - Event date
+     * @param {string} startTime - Event start time
+     * @param {string} endTime - Event end time
      * @param {string} location - Event location
      * @param {string} cost - Event cost
      */
-    addEvent(title, date, location, cost) {
-        this.eventList.push(new EventViewModel(title, date, location, cost));
+    addEvent(title, date, startTime, endTime, location, cost) {
+        this.eventList.push(new EventViewModel(title, date, startTime, endTime, location, cost));
     }
 }

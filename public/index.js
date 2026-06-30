@@ -178,7 +178,7 @@ async function loadSessionData(viewModel, currentSession, nextSession) {
       if (events && events.length > 0) {
         eventlist = new EventListViewModel();
         for (const evt of events) {
-          eventlist.addEvent(evt.name, evt.date, evt.location, evt.cost);
+          eventlist.addEvent(evt.name, evt.date, evt.starttime, evt.endtime, evt.location, evt.cost);
         }
       }
     }

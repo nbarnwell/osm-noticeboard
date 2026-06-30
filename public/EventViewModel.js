@@ -6,12 +6,26 @@ export default class EventViewModel {
      * Create a new event view model
      * @param {string} title - Event title
      * @param {string} date - Event date
+     * @param {string} startTime - Event start time
+     * @param {string} endTime - Event end time
      * @param {string} location - Event location
      * @param {string} cost - Event cost
      */
-    constructor(title, date, location, cost) {
+    constructor(title, date, startTime, endTime, location, cost) {
         this.title = ko.observable(title);
         this.date = ko.observable(date);
+        this.startTime = ko.observable(startTime);
+
+        this.formattedStartTime = ko.computed(() => {
+            return this.startTime().substring(0, 5);
+        });
+
+        this.endTime = ko.observable(endTime);
+
+        this.formattedEndTime = ko.computed(() => {
+            return this.endTime().substring(0, 5);
+        });
+
         this.location = ko.observable(location);
         this.cost = ko.observable(cost);
         

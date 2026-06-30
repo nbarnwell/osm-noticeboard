@@ -371,7 +371,11 @@
                                         <div class="text-muted small fw-light" data-bind="text: location">Location</div>
                                     </div>
                                     <div class="text-end">
-                                        <div class="text-muted small" data-bind="text: date">DD/MM/YYYY</div>
+                                        <div class="text-muted small">
+                                            <span data-bind="text: date">DD/MM/YYYY</span>
+                                            <span data-bind="text: formattedStartTime">00:00</span>
+                                            - <span data-bind="text: formattedEndTime">00:00</span>
+                                        </div>
                                         <div class="text-muted small" data-bind="text: formattedCost">Cost</div>
                                     </div>
                                 </li>
